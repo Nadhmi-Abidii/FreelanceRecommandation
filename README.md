@@ -52,3 +52,113 @@ The stack below is production-like for local usage:
   ```bash
   docker compose up --build -d
   ```
+- View logs:
+  ```bash
+  docker compose logs -f backend
+  ```
+- Stop services:
+  ```bash
+  docker compose down
+  ```
+
+## API Examples
+Base URL: `http://localhost:9020`
+
+### 1) Create Administrator
+Endpoint: `POST /auth/register/admin`  
+Authentication: none
+
+Request body:
+```json
+{
+  "firstName": "Super",
+  "lastName": "Admin",
+  "email": "admin@example.com",
+  "password": "Password123!",
+  "phone": "123456789",
+  "address": "Tunis"
+}
+```
+
+cURL:
+```bash
+curl -X POST "http://localhost:9020/auth/register/admin" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName":"Super",
+    "lastName":"Admin",
+    "email":"admin@example.com",
+    "password":"Password123!",
+    "phone":"123456789",
+    "address":"Tunis"
+  }'
+```
+
+PowerShell:
+```powershell
+$body = @{
+  firstName = "Super"
+  lastName  = "Admin"
+  email     = "admin@example.com"
+  password  = "Password123!"
+  phone     = "123456789"
+  address   = "Tunis"
+} | ConvertTo-Json
+
+Invoke-WebRequest -UseBasicParsing `
+  -Uri "http://localhost:9020/auth/register/admin" `
+  -Method POST `
+  -ContentType "application/json" `
+  -Body $body
+```
+
+Note: success response includes a JWT token in `data.token`.
+
+### 2) Add Domaine
+Endpoint: `POST /domaines`  
+Authentication: Bearer token required (`Authorization: Bearer <token>`)
+
+Request body:
+```json
+{
+  "name": "Web Development",
+  "description": "Frontend and backend development",
+  "icon": "code",
+  "color": "#2563EB"
+}
+```
+
+cURL:
+```bash
+curl -X POST "http://localhost:9020/domaines" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_TOKEN>" \
+  -d '{
+    "name":"Web Development",
+    "description":"Frontend and backend development",
+    "icon":"code",
+    "color":"#2563EB"
+  }'
+```
+
+PowerShell:
+```powershell
+$token = "<YOUR_TOKEN>"
+$body = @{
+  name        = "Web Development"
+  description = "Frontend and backend development"
+  icon        = "code"
+  color       = "#2563EB"
+} | ConvertTo-Json
+
+Invoke-WebRequest -UseBasicParsing `
+  -Uri "http://localhost:9020/domaines" `
+  -Method POST `
+  -ContentType "application/json" `
+  -Headers @{ Authorization = "Bearer $token" } `
+  -Body $body
+```
+
+### Common API Errors
+- `400` on register admin: email already used or invalid/missing fields.
+- `401/403` on create domaine: missing or invalid token.
