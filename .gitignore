@@ -1,4 +1,4 @@
-echo ".env" >> .gitignore
-echo "uploads/" >> .gitignore
-echo ".vscode/" >> .gitignore
-echo ".idea/" >> .gitignore
+.env
+uploads/
+.vscode/
+.idea/
