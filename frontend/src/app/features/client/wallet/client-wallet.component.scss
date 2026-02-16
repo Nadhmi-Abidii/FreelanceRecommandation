@@ -1,0 +1,223 @@
+/* ==== VARIABLES GLOBALES (peuvent aussi aller dans styles.scss) ==== */
+:root {
+  --bg: #0b1020;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #6b7280;
+  --ring: #e5e7eb;
+  --primary: #2563eb;
+  --shadow: 0 1px 3px rgba(2, 6, 23, 0.06), 0 12px 28px rgba(2, 6, 23, 0.1);
+}
+
+:root.dash-dark {
+  --surface: #111827;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --ring: #1f2937;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.25), 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+/* ==== NAVBAR ==== */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 64px;
+  background: linear-gradient(90deg, #e8f0ff, #eaf4ff 40%, #eef7ff 100%);
+  border-bottom: 1px solid var(--ring);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .logo-svg {
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    display: block;
+  }
+
+  .brand-name {
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    font-size: 20px;
+  }
+
+  .nav {
+    display: flex;
+    gap: 2px;
+    margin-left: 12px;
+
+    a.active {
+      font-weight: 700;
+    }
+  }
+
+  .spacer {
+    flex: 1 1 auto;
+  }
+
+  .dark-toggle {
+    margin-right: 6px;
+  }
+}
+
+/* ==== TES STYLES EXISTANTS ==== */
+:host {
+  display: block;
+  min-height: 100vh;
+  background: #f6f8fb;
+  color: #0f172a;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px 20px;
+  box-shadow: 0 10px 30px -24px rgba(15, 23, 42, 0.45);
+}
+
+.eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #3b82f6;
+  margin: 0 0 4px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.muted {
+  color: #6b7280;
+}
+
+.summary,
+.recharge,
+.transactions {
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+
+  h2 {
+    margin: 4px 0 6px;
+    font-size: 30px;
+  }
+}
+
+.summary__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.recharge__form {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.transactions {
+  padding: 12px;
+}
+
+.transactions__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 6px 12px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr 2fr 1fr;
+  align-items: center;
+  padding: 10px 6px;
+  border-bottom: 1px solid #e5e7eb;
+
+  &--head {
+    font-weight: 600;
+    color: #6b7280;
+  }
+
+  &--empty {
+    justify-content: center;
+  }
+}
+
+.table__amount {
+  font-weight: 700;
+  text-align: right;
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6b7280;
+}
+
+.state {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px dashed #fecdd3;
+  color: #b91c1c;
+}
+
+@media (max-width: 720px) {
+  .page__head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .recharge__form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .table__row {
+    grid-template-columns: 1fr 1fr;
+    grid-row-gap: 6px;
+  }
+
+  .table__row div:nth-child(n + 3) {
+    grid-column: 1 / span 2;
+  }
+}

@@ -1,0 +1,213 @@
+:host {
+  display: block;
+}
+
+.admin-hero {
+  background: radial-gradient(1200px 300px at -10% -40%, #c084fc30 0%, transparent 60%),
+              radial-gradient(900px 300px at 110% -60%, #60a5fa30 0%, transparent 60%),
+              linear-gradient(180deg, #ffffff, #f8faff);
+}
+
+.admin-layout {
+  max-width: 1220px;
+  margin: 0 auto 36px;
+  padding: 12px 18px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-hero {
+  margin-top: 6px;
+}
+
+.admin-hero__panel {
+  align-self: stretch;
+}
+
+.user-card {
+  padding-bottom: 12px;
+
+  .user-card__list {
+    display: flex;
+    flex-direction: column;
+    padding: 0 16px 12px;
+    gap: 6px;
+  }
+
+  .user-card__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 12px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+
+    &:hover {
+      border-color: color-mix(in srgb, var(--primary) 20%, transparent);
+      box-shadow: 0 10px 22px rgba(37,99,235,.1);
+      transform: translateY(-1px);
+    }
+  }
+
+  .user-card__info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .user-card__name {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .user-card__email {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .user-card__meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+}
+
+.role-chip {
+  --accent: #2563eb;
+  background: color-mix(in srgb, var(--accent) 12%, #f8fafc);
+  color: color-mix(in srgb, var(--accent) 70%, #0f172a);
+  font-weight: 600;
+  text-transform: none;
+
+  &.role-client {
+    --accent: #3b82f6;
+  }
+  &.role-freelancer {
+    --accent: #10b981;
+  }
+  &.role-admin {
+    --accent: #a855f7;
+  }
+}
+
+.status-pill {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: none;
+  background: #e5e7eb;
+  color: #4b5563;
+
+  &.is-active {
+    background: #dcfce7;
+    color: #047857;
+  }
+
+  &.is-inactive {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+}
+
+.user-table {
+  margin: 10px 24px 36px;
+  overflow: hidden;
+
+  .user-table__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead th {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--muted);
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--ring);
+    background: color-mix(in srgb, #ffffff 90%, var(--primary) 6%);
+  }
+
+  tbody td {
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--ring);
+    vertical-align: middle;
+  }
+
+  tbody tr:hover {
+    background: color-mix(in srgb, var(--primary) 4%, #ffffff 96%);
+  }
+
+  .user-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .user-name {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .user-email {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .missions-count {
+    font-weight: 600;
+  }
+
+  .join-date {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .actions-col {
+    white-space: nowrap;
+    text-align: right;
+  }
+}
+
+.stats-grid--admin {
+  margin: 4px 0 6px;
+}
+
+.admin-main-grid {
+  align-items: start;
+}
+
+.admin-layout .user-table {
+  margin: 4px 0 0;
+}
+
+@media (max-width: 900px) {
+  .user-table {
+    margin-inline: 16px;
+  }
+
+  .user-card .user-card__item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .user-card__meta {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

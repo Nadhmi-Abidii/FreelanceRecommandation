@@ -1,0 +1,212 @@
+<div class="page auth-page">
+  <header class="top-bar">
+    <div class="logo">To<span>Work</span></div>
+    <nav class="main-nav">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+      <a routerLink="/freelancers" class="disabled" aria-disabled="true">Freelancers</a>
+      <a routerLink="/clients" class="disabled" aria-disabled="true">Clients</a>
+      <a routerLink="/projects" class="disabled" aria-disabled="true">Projects</a>
+    </nav>
+    <div class="cta">
+      <a routerLink="/login" class="btn ghost">SignIn</a>
+      <a routerLink="/register" class="btn solid active">SignUp</a>
+    </div>
+  </header>
+
+  <main class="register-main">
+    <!-- Sélection du type de compte -->
+    <section class="account-selection" [class.compact]="view() === 'form' || freelancerOnly">
+      <h1>{{ freelancerOnly ? 'Register as a freelancer' : 'Join as a client or freelancer' }}</h1>
+      <p class="subtitle" *ngIf="!freelancerOnly && view() === 'select'">
+        Choose the account that matches the way you want to work on ToWork.
+      </p>
+      <p class="subtitle" *ngIf="freelancerOnly">
+        Create your freelancer account so you can apply to missions and receive secure payments.
+      </p>
+
+      <div class="options" role="radiogroup" aria-label="Select account type" *ngIf="!freelancerOnly">
+        <button
+          type="button"
+          class="option-card"
+          [class.selected]="selectedType() === 'client'"
+          (click)="selectType('client')"
+        >
+          <span class="icon" aria-hidden="true">🧑‍💼</span>
+          <span class="title">I'm a client, hiring for a project</span>
+          <span class="description">Post missions and collaborate with talented freelancers.</span>
+          <mat-icon class="check" aria-hidden="true">check_circle</mat-icon>
+        </button>
+
+        <button
+          type="button"
+          class="option-card"
+          [class.selected]="selectedType() === 'freelancer'"
+          (click)="selectType('freelancer')"
+        >
+          <span class="icon" aria-hidden="true">💼</span>
+          <span class="title">I'm a freelancer, looking for work</span>
+          <span class="description">Find quality projects and get paid securely.</span>
+          <mat-icon class="check" aria-hidden="true">check_circle</mat-icon>
+        </button>
+      </div>
+
+      <div class="options single" *ngIf="freelancerOnly">
+        <div class="option-card selected locked" aria-label="Freelancer account selected by default">
+          <span class="icon" aria-hidden="true">�Y'�</span>
+          <span class="title">Freelancer account</span>
+          <span class="description">
+            Complete your profile with phone, hourly rate, availability and address to match backend fields.
+          </span>
+          <mat-icon class="check" aria-hidden="true">check_circle</mat-icon>
+        </div>
+      </div>
+
+      <div class="selection-error" *ngIf="!freelancerOnly && typeSelectionError()">
+        Please choose whether you are a client or a freelancer to continue.
+      </div>
+
+      <button *ngIf="view() === 'select' && !freelancerOnly" class="primary-action" type="button" (click)="goToForm()">
+        Create Account
+      </button>
+
+      <div class="secondary-action" *ngIf="view() === 'select' && !freelancerOnly">
+        Already have an account? <a routerLink="/login">Log in</a>
+      </div>
+
+      <button *ngIf="view() === 'form' && !freelancerOnly" class="link-action" type="button" (click)="backToSelection()">
+        Change account type
+      </button>
+    </section>
+
+    <!-- Formulaire -->
+    <mat-card class="auth-card" *ngIf="view() === 'form'">
+      <mat-card-header>
+        <mat-card-title>
+          Complete your {{ selectedType() === 'client' ? 'client' : 'freelancer' }} profile
+        </mat-card-title>
+        <mat-card-subtitle>Tell us a little more so we can personalise your experience.</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="alert error" *ngIf="errorMessage()" role="alert">
+          {{ errorMessage() }}
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" aria-label="Register form">
+          <div class="field-grid">
+            <mat-form-field appearance="outline" class="full">
+              <mat-label>First name</mat-label>
+              <input matInput formControlName="firstName" autocomplete="given-name" />
+              <mat-error *ngIf="firstNameError()">{{ firstNameError() }}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full">
+              <mat-label>Last name</mat-label>
+              <input matInput formControlName="lastName" autocomplete="family-name" />
+              <mat-error *ngIf="lastNameError()">{{ lastNameError() }}</mat-error>
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="email" type="email" autocomplete="email" />
+            <mat-icon matSuffix>mail</mat-icon>
+            <mat-error *ngIf="emailError()">{{ emailError() }}</mat-error>
+          </mat-form-field>
+
+          <div class="field-grid">
+            <mat-form-field appearance="outline" class="full">
+              <mat-label>Password</mat-label>
+              <input
+                matInput
+                [type]="hidePassword() ? 'password' : 'text'"
+                formControlName="password"
+                autocomplete="new-password"
+              />
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="hidePassword.set(!hidePassword())"
+                [attr.aria-label]="'Toggle password visibility'"
+              >
+                <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              <mat-error *ngIf="passwordError()">{{ passwordError() }}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full">
+              <mat-label>Confirm password</mat-label>
+              <input
+                matInput
+                [type]="hideConfirmPassword() ? 'password' : 'text'"
+                formControlName="confirmPassword"
+                autocomplete="new-password"
+              />
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="hideConfirmPassword.set(!hideConfirmPassword())"
+                [attr.aria-label]="'Toggle password visibility'"
+              >
+                <mat-icon>{{ hideConfirmPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              <mat-error *ngIf="confirmPasswordError()">{{ confirmPasswordError() }}</mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="field-grid">
+            <mat-form-field appearance="outline" class="full">
+              <mat-label>Phone</mat-label>
+              <input matInput formControlName="phone" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full">
+              <mat-label>Address</mat-label>
+              <input matInput formControlName="address" />
+            </mat-form-field>
+          </div>
+
+          <!-- Champs Client -->
+          <div class="field-grid" *ngIf="selectedType() === 'client'">
+            <mat-form-field appearance="outline" class="full">
+              <mat-label>City</mat-label>
+              <input matInput formControlName="city" />
+            </mat-form-field>
+          </div>
+
+          <!-- Champs Freelancer -->
+          <div class="field-grid" *ngIf="selectedType() === 'freelancer'">
+            <mat-form-field appearance="outline" class="full">
+              <mat-label>Hourly rate</mat-label>
+              <input matInput type="number" formControlName="hourlyRate" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="full">
+              <mat-label>Availability</mat-label>
+              <input matInput formControlName="availability" />
+            </mat-form-field>
+          </div>
+
+          <div class="agreements" [class.invalid]="form.controls.agree.invalid && (form.controls.agree.touched || submitted())">
+            <mat-checkbox formControlName="agree">I agree to the Terms &amp; Privacy Policy</mat-checkbox>
+            <span class="hint" *ngIf="form.controls.agree.invalid && (form.controls.agree.touched || submitted())">
+              You must accept the terms to continue.
+            </span>
+          </div>
+
+          <button class="submit" mat-raised-button color="primary" [disabled]="form.invalid || loading()">
+            <ng-container *ngIf="!loading(); else loadingTpl">Create account</ng-container>
+          </button>
+          <ng-template #loadingTpl>
+            <mat-progress-spinner mode="indeterminate" diameter="22"></mat-progress-spinner>
+          </ng-template>
+        </form>
+
+        <div class="form-login">
+          Already have an account?
+          <a routerLink="/login">Log in</a>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </main>
+</div>

@@ -1,0 +1,104 @@
+<div class="page auth-page">
+  <header class="top-bar">
+    <div class="logo">To<span>Work</span></div>
+    <nav class="main-nav">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+      <a routerLink="/freelancers" class="disabled" aria-disabled="true">Freelancers</a>
+      <a routerLink="/clients" class="disabled" aria-disabled="true">Clients</a>
+      <a routerLink="/projects" class="disabled" aria-disabled="true">Projects</a>
+    </nav>
+    <div class="cta">
+      <a routerLink="/login" class="btn ghost active">SignIn</a>
+      <a routerLink="/register" class="btn solid">SignUp</a>
+    </div>
+  </header>
+
+  <main class="auth-content">
+    <section class="auth-intro">
+      <h1>Welcome back to your workspace</h1>
+      <p>
+        Connect with your clients, manage proposals, and keep your freelance business on track with the
+        same polished experience you saw on the landing page.
+      </p>
+      <ul class="highlights">
+        <li>Track ongoing missions and deliverables with clarity.</li>
+        <li>Collaborate confidently with secure messaging tools.</li>
+        <li>Receive tailored opportunities that match your profile.</li>
+      </ul>
+      <div class="switch">
+        <span>New to ToWork?</span>
+        <a routerLink="/register">Create an account</a>
+      </div>
+    </section>
+
+    <mat-card class="auth-card">
+      <mat-card-header>
+        <mat-card-title>Sign in</mat-card-title>
+        <mat-card-subtitle>We're happy to see you again.</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="alert error" *ngIf="errorMessage()" role="alert">
+          {{ errorMessage() }}
+        </div>
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" aria-label="Login form">
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="email" type="email" autocomplete="email" />
+            <mat-icon matSuffix>mail</mat-icon>
+            <mat-error *ngIf="emailError()">{{ emailError() }}</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Password</mat-label>
+            <input matInput [type]="hidePassword() ? 'password' : 'text'" formControlName="password"
+              autocomplete="current-password" />
+            <button mat-icon-button matSuffix type="button" (click)="hidePassword.set(!hidePassword())"
+              [attr.aria-label]="'Toggle password visibility'">
+              <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <mat-error *ngIf="passwordError()">{{ passwordError() }}</mat-error>
+          </mat-form-field>
+
+          <div class="row">
+            <mat-checkbox formControlName="remember">Remember me</mat-checkbox>
+            <a class="link" routerLink="/forgot-password">Forgot password?</a>
+          </div>
+
+          <button class="submit" mat-raised-button color="primary" [disabled]="form.invalid || loading()">
+            <ng-container *ngIf="!loading(); else loadingTpl">Sign in</ng-container>
+          </button>
+          <ng-template #loadingTpl>
+            <mat-progress-spinner mode="indeterminate" diameter="22"></mat-progress-spinner>
+          </ng-template>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </main>
+
+  <footer class="site-footer">
+    <div class="brand">
+      <div class="logo">To<span>Work</span></div>
+      <p>
+        Plateforme de mise en relation entre freelancers et clients pour des projets professionnels.
+      </p>
+      <div class="socials" aria-label="Social media">
+        <a href="#" aria-label="Facebook">Fb</a>
+        <a href="#" aria-label="Twitter">Tw</a>
+        <a href="#" aria-label="LinkedIn">In</a>
+        <a href="#" aria-label="Instagram">Ig</a>
+      </div>
+    </div>
+    <div class="links">
+      <strong>WebSite Info</strong>
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+      <a routerLink="/domains" class="disabled" aria-disabled="true">Domains</a>
+      <a routerLink="/freelancers" class="disabled" aria-disabled="true">Freelancers</a>
+      <a routerLink="/clients" class="disabled" aria-disabled="true">Clients</a>
+    </div>
+    <div class="links">
+      <strong>Account</strong>
+      <a routerLink="/login" class="active">SignIn</a>
+      <a routerLink="/register">SignUp</a>
+    </div>
+  </footer>
+</div>

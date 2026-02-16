@@ -1,0 +1,378 @@
+<mat-toolbar class="topbar" role="navigation" aria-label="Navigation client">
+  <div class="brand" routerLink="/client" routerLinkActive="active" aria-label="Tableau de bord client">
+    <svg class="logo-svg" width="34" height="34" viewBox="0 0 48 48" role="img" aria-label="ToWork logo">
+      <defs>
+        <linearGradient id="twg-client" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#2563eb"></stop>
+          <stop offset="100%" stop-color="#7c3aed"></stop>
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#twg-client)"></rect>
+      <path d="M14 18h20a2 2 0 0 0 0-4H14a2 2 0 0 0 0 4zm8 2v14a2 2 0 0 0 4 0V20z" fill="white"></path>
+    </svg>
+    <span class="brand-name">ToWork</span>
+  </div>
+
+  <nav class="nav" aria-label="Liens client">
+    <a mat-button routerLink="/dashboard" routerLinkActive="active">Tableau de bord</a>
+    <a mat-button routerLink="/missions/new" routerLinkActive="active">Creer une mission</a>
+    <a mat-button routerLink="/missions" routerLinkActive="active">Mes missions</a>
+    <a mat-button routerLink="/candidatures" routerLinkActive="active">Candidatures</a>
+    <a mat-button routerLink="/messages" routerLinkActive="active">Discussions</a>
+    <a mat-button routerLink="/client/wallet" routerLinkActive="active">Wallet</a>
+  </nav>
+
+  <span class="spacer"></span>
+
+  <mat-slide-toggle class="dark-toggle" (change)="toggleDark($event.checked)">
+    Dark
+  </mat-slide-toggle>
+
+  <button mat-icon-button matBadge="3" matBadgeColor="accent" aria-label="Notifications">
+    <mat-icon>notifications</mat-icon>
+  </button>
+
+  <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Profil client">
+    <mat-icon>account_circle</mat-icon>
+  </button>
+
+  <mat-menu #userMenu="matMenu">
+    <button mat-menu-item routerLink="/client/profile">
+      <mat-icon>person</mat-icon>
+      <span>Profil</span>
+    </button>
+    <button mat-menu-item routerLink="/client/settings">
+      <mat-icon>settings</mat-icon>
+      <span>Parametres</span>
+    </button>
+    <mat-divider></mat-divider>
+    <button mat-menu-item routerLink="/login">
+      <mat-icon>logout</mat-icon>
+      <span>Deconnexion</span>
+    </button>
+  </mat-menu>
+</mat-toolbar>
+
+<section class="client-candidatures">
+  <!-- HERO -->
+  <header class="client-candidatures__hero">
+    <div>
+      <p class="eyebrow">Pipeline client</p>
+      <h1>Suivez vos candidatures en temps reel</h1>
+      <p>
+        Visualisez les freelances qui ont postule a vos missions, echangez avec eux et choisissez votre profil favori.
+      </p>
+    </div>
+
+    <button mat-stroked-button color="primary" type="button" (click)="refreshMission()" [disabled]="candidaturesLoading()">
+      <mat-icon>refresh</mat-icon>
+      Actualiser
+    </button>
+  </header>
+
+  <!-- GRID: missions left / details right -->
+  <div class="client-candidatures__grid">
+    <!-- MISSIONS -->
+    <aside class="missions-panel">
+      <mat-card class="missions-card" appearance="outlined">
+        <mat-card-header>
+          <mat-card-title>Mes missions publiees</mat-card-title>
+          <mat-card-subtitle>Selectionnez-en une pour voir les profils recus</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <div class="panel-state" *ngIf="missionsLoading()">
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+            <span>Chargement en cours...</span>
+          </div>
+
+          <div class="panel-error" *ngIf="!missionsLoading() && missionsError()">
+            <mat-icon>error_outline</mat-icon>
+            <div>
+              <p>{{ missionsError() }}</p>
+              <button mat-button color="primary" type="button" (click)="loadMissions()">Reessayer</button>
+            </div>
+          </div>
+
+          <div
+            class="mission-item"
+            *ngFor="let mission of missions(); trackBy: trackMission"
+            [class.is-active]="mission.id === selectedMissionId()"
+            (click)="selectMission(mission.id)"
+          >
+            <div class="mission-item__head">
+              <h3>{{ mission.title }}</h3>
+              <span class="mission-chip" [ngClass]="mission.statusClass">{{ mission.statusLabel }}</span>
+            </div>
+
+            <div class="mission-item__sub">
+              <span class="mission-item__meta">
+                <mat-icon>event</mat-icon>
+                {{ mission.deadlineLabel }}
+              </span>
+
+              <span class="mission-item__meta">
+                <mat-icon>group</mat-icon>
+                {{ mission.candidaturesCount }} candidature{{ mission.candidaturesCount > 1 ? 's' : '' }}
+              </span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </aside>
+
+    <!-- DETAILS -->
+    <section class="candidatures-panel">
+      <ng-container *ngIf="selectedMission(); else emptyMission">
+        <!-- header mission -->
+        <header class="candidatures-panel__header">
+          <div>
+            <p class="eyebrow">Mission selectionnee</p>
+            <h2>{{ selectedMission()?.title }}</h2>
+            <p class="muted">{{ selectedMission()?.deadlineLabel }} · {{ selectedMission()?.domaine }}</p>
+          </div>
+
+          <div class="header-actions">
+            <div class="mission-chip mission-chip--large" [ngClass]="selectedMission()?.statusClass">
+              {{ selectedMission()?.statusLabel }}
+            </div>
+            <button mat-stroked-button color="primary" type="button" (click)="goToMilestones(selectedCandidate())">
+              <mat-icon>flag</mat-icon>
+              Jalons & paiement
+            </button>
+          </div>
+        </header>
+
+        <!-- loading / error / empty -->
+        <div class="candidatures-panel__body" aria-live="polite">
+          <div class="panel-state" *ngIf="candidaturesLoading()">
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+            <span>Chargement des candidatures...</span>
+          </div>
+
+          <div class="panel-error" *ngIf="!candidaturesLoading() && candidaturesError()">
+            <mat-icon>error_outline</mat-icon>
+            <div>
+              <p>{{ candidaturesError() }}</p>
+              <button mat-button color="primary" type="button" (click)="refreshMission()">Recharger</button>
+            </div>
+          </div>
+
+          <div class="panel-empty" *ngIf="!candidaturesLoading() && !candidaturesError() && !candidatesForMission().length">
+            <mat-icon>person_search</mat-icon>
+            <p>Aucune candidature pour le moment. Partagez votre mission pour recevoir des profils qualifies.</p>
+          </div>
+
+          <div class="recommendations" *ngIf="selectedMission()">
+            <div class="recommendations__head">
+              <div>
+                <p class="eyebrow">AI</p>
+                <h3>Suggestions de profils</h3>
+              </div>
+            </div>
+
+            <mat-progress-bar *ngIf="recommendationsLoading()" mode="indeterminate"></mat-progress-bar>
+
+            <div class="recommendations__error" *ngIf="recommendationsError()">
+              <mat-icon>error_outline</mat-icon>
+              <span>{{ recommendationsError() }}</span>
+            </div>
+
+            <div class="recommendations__empty" *ngIf="!recommendationsLoading() && !recommendations().length">
+              <span>Aucune suggestion pour le moment.</span>
+            </div>
+
+            <div class="recommendations__list" *ngIf="recommendationCards().length">
+              <div class="recommendation" *ngFor="let rec of recommendationCards()">
+                <div>
+                  <strong>{{ rec.freelancerName || 'Freelancer' }}</strong>
+                  <p class="muted">{{ rec.title || 'Profil' }}</p>
+                </div>
+                <div class="recommendation__meta">
+                  <span class="recommendation__badge" [ngClass]="'recommendation__badge--' + rec.badgeTone">
+                    {{ rec.badgeLabel }}
+                  </span>
+                  <span class="recommendation__chip" *ngIf="rec.scorePercent != null">
+                    Score {{ rec.scorePercent }}%
+                  </span>
+                  <span class="muted" *ngIf="rec.reason">{{ rec.reason }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CANDIDATES LIST -->
+          <div class="candidate-list" *ngIf="candidatesForMission().length">
+            <article
+              class="candidate-card"
+              *ngFor="let candidate of candidatesForMission(); trackBy: trackCandidate"
+              [class.is-selected]="candidate.id === selectedCandidateId()"
+              (click)="selectCandidate(candidate.id)"
+            >
+              <div class="candidate-card__head">
+                <div>
+                  <h3>{{ candidate.freelancerName }}</h3>
+                  <p class="muted">{{ candidate.headline }}</p>
+                </div>
+
+                <div class="candidate-card__tools">
+                  <button
+                    mat-icon-button
+                    type="button"
+                    matTooltip="Ouvrir dans Discussions"
+                    (click)="openDiscussion(candidate); $event.stopPropagation()"
+                  >
+                    <mat-icon>chat</mat-icon>
+                  </button>
+
+                  <span class="candidate-chip" [ngClass]="candidate.statusTone">
+                    {{ candidate.statusLabel }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="candidate-card__metaRow">
+                <span class="candidate-card__meta">
+                  <mat-icon>location_on</mat-icon>
+                  {{ candidate.location }}
+                </span>
+
+                <span class="candidate-card__meta" *ngIf="candidate.resumeUrl">
+                  <mat-icon>description</mat-icon>
+                  <a [href]="candidate.resumeUrl" target="_blank" rel="noopener" (click)="$event.stopPropagation()">
+                    Voir CV / portfolio
+                  </a>
+                </span>
+              </div>
+            </article>
+          </div>
+
+          <!-- ✅ DETAIL GRID: Conversation + Feedback (isolated cards) -->
+          <div class="detail-grid" *ngIf="selectedCandidate() as candidate">
+            <!-- CONVERSATION CARD -->
+            <mat-card class="conversation-card" appearance="outlined">
+              <mat-card-header>
+                <mat-card-title>Conversation</mat-card-title>
+                <mat-card-subtitle>{{ candidate.freelancerName }} · {{ candidate.statusLabel }}</mat-card-subtitle>
+
+                <div class="conversation-actions">
+                  <button mat-stroked-button type="button" (click)="openDiscussion(candidate)">
+                    <mat-icon>open_in_new</mat-icon>
+                    Discussions
+                  </button>
+
+                  <button mat-stroked-button color="primary" type="button" (click)="goToMilestones(candidate)">
+                    <mat-icon>flag</mat-icon>
+                    Jalons
+                  </button>
+                </div>
+              </mat-card-header>
+
+              <mat-card-content>
+                <div class="conversation">
+                  <div class="conversation__bubble conversation__bubble--freelancer">
+                    <div class="conversation__meta">
+                      <strong>{{ candidate.freelancerName }}</strong>
+                      <span>{{ candidate.createdAt | date: 'dd MMM yyyy à HH:mm' }}</span>
+                    </div>
+                    <p>{{ candidate.coverLetter || "Ce freelancer n'a pas encore partage de message." }}</p>
+
+                    <a *ngIf="candidate.resumeUrl" [href]="candidate.resumeUrl" target="_blank" rel="noopener">
+                      <mat-icon>attach_file</mat-icon>
+                      Consulter le CV joint
+                    </a>
+                  </div>
+
+                  <div class="conversation__bubble conversation__bubble--client" *ngIf="candidate.clientMessage">
+                    <div class="conversation__meta">
+                      <strong>Vous</strong>
+                      <span>{{ candidate.updatedAt | date: 'dd MMM yyyy à HH:mm' }}</span>
+                    </div>
+                    <p>{{ candidate.clientMessage }}</p>
+                  </div>
+                </div>
+
+                <form class="conversation__form" [formGroup]="messageForm" (ngSubmit)="sendAction('message')">
+                  <mat-form-field appearance="outline" class="conversation__field">
+                    <mat-label>Message au freelancer</mat-label>
+                    <textarea
+                      matInput
+                      rows="4"
+                      formControlName="message"
+                      placeholder="Partagez vos attentes, precisez le scope ou proposez un creneau."
+                    ></textarea>
+                    <mat-error *ngIf="messageForm.controls.message.hasError('required')">
+                      Le message est requis pour cette action.
+                    </mat-error>
+                    <mat-error *ngIf="messageForm.controls.message.hasError('minlength')">
+                      4 caracteres minimum.
+                    </mat-error>
+                  </mat-form-field>
+
+                  <div class="conversation__actions">
+                    <button mat-stroked-button color="primary" type="submit" [disabled]="actionLoading()">
+                      <mat-icon>mail</mat-icon>
+                      Envoyer un message
+                    </button>
+
+                    <span class="spacer"></span>
+
+                    <button mat-flat-button color="primary" type="button" [disabled]="actionLoading()" (click)="sendAction('ACCEPTED')">
+                      <mat-icon>verified</mat-icon>
+                      Accepter ce profil
+                    </button>
+
+                    <button mat-button color="warn" type="button" [disabled]="actionLoading()" (click)="sendAction('REJECTED')">
+                      <mat-icon>highlight_off</mat-icon>
+                      Refuser
+                    </button>
+                  </div>
+                </form>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- FEEDBACK CARD (ISOLATED) -->
+            <mat-card class="feedback-card" appearance="outlined">
+              <mat-card-header>
+                <mat-card-title>Feedback</mat-card-title>
+                <mat-card-subtitle>Votre avis sur le freelance</mat-card-subtitle>
+              </mat-card-header>
+
+              <mat-card-content>
+                <div class="feedback-box">
+                  <mat-icon>star_rate</mat-icon>
+                  <div>
+                    <div class="feedback-title">Note & commentaire</div>
+                    <div class="muted small">
+                      Disponible après finalisation de la mission.
+                    </div>
+                  </div>
+                </div>
+
+                <div class="feedback-actions">
+                  <app-mission-feedback-button
+                    *ngIf="selectedMission()"
+                    [mission]="{ id: selectedMission()!.id, status: selectedMission()!.status }"
+                    context="client">
+                  </app-mission-feedback-button>
+                </div>
+
+                <div class="feedback-mini muted small">
+                  Astuce : finalisez la mission puis laissez une note pour améliorer le matching.
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #emptyMission>
+        <div class="panel-empty panel-empty--ghost">
+          <mat-icon>dashboard_customize</mat-icon>
+          <h3>Choisissez une mission</h3>
+          <p>Vous verrez apparaitre ici tous les freelances qui candidatent a vos projets.</p>
+        </div>
+      </ng-template>
+    </section>
+  </div>
+</section>

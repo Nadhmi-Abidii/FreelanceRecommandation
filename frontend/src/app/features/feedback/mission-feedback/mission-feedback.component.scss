@@ -1,0 +1,73 @@
+.mission-feedback {
+  margin-top: 16px;
+}
+
+.state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6f7785;
+
+  &--error {
+    color: #c62828;
+  }
+}
+
+.feedback__readonly,
+.feedback__form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  mat-icon {
+    color: #cfd3db;
+    &.filled {
+      color: #f5a623;
+    }
+  }
+
+  &__value {
+    font-weight: 600;
+  }
+}
+
+.rating--picker {
+  button.active mat-icon {
+    color: #f5a623;
+  }
+}
+
+.feedback__comment {
+  margin: 6px 0 0;
+  color: #1f2937;
+}
+
+.feedback__field {
+  width: 100%;
+}
+
+.error {
+  color: #c62828;
+  font-size: 0.85rem;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.muted {
+  color: #6f7785;
+  font-size: 0.9rem;
+}

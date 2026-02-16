@@ -1,0 +1,470 @@
+<!-- NAVBAR -->
+<mat-toolbar class="topbar" role="navigation" aria-label="Navigation principale">
+  <div class="brand" routerLink="/dashboard" aria-label="Accueil">
+    <svg class="logo-svg" width="34" height="34" viewBox="0 0 48 48" role="img" aria-label="Logo ToWork">
+      <defs>
+        <linearGradient id="twg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#0ea5e9" />
+          <stop offset="100%" stop-color="#2563eb" />
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#twg)" />
+      <path d="M14 18h20a2 2 0 0 0 0-4H14a2 2 0 0 0 0 4zm8 2v14a2 2 0 0 0 4 0V20z" fill="white" />
+    </svg>
+    <span class="brand-name">ToWork</span>
+  </div>
+
+  <nav class="nav">
+    <a mat-button routerLink="/dashboard" routerLinkActive="active">Tableau de bord</a>
+    <a mat-button routerLink="/missions/new" routerLinkActive="active">Creer une mission</a>
+    <a mat-button routerLink="/missions" routerLinkActive="active">Mes missions</a>
+    <a mat-button routerLink="/candidatures" routerLinkActive="active">Candidatures</a>
+    <a mat-button routerLink="/messages" routerLinkActive="active">Discussions</a>
+    <a mat-button routerLink="/client/wallet" routerLinkActive="active">Wallet</a>
+  </nav>
+
+  <span class="spacer"></span>
+
+  <!-- On garde le design, mais SANS appel de méthode TS pour éviter toggleDark() -->
+  <mat-slide-toggle class="dark-toggle">
+    Mode sombre
+  </mat-slide-toggle>
+
+  <button mat-icon-button matBadge="3" matBadgeColor="accent" aria-label="Notifications">
+    <mat-icon>notifications</mat-icon>
+  </button>
+
+  <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Profil">
+    <mat-icon>account_circle</mat-icon>
+  </button>
+
+  <mat-menu #userMenu="matMenu">
+    <button mat-menu-item routerLink="/profile">
+      <mat-icon>person</mat-icon><span>Profil</span>
+    </button>
+    <button mat-menu-item routerLink="/settings">
+      <mat-icon>settings</mat-icon><span>Parametres</span>
+    </button>
+    <mat-divider></mat-divider>
+    <button mat-menu-item routerLink="/login">
+      <mat-icon>logout</mat-icon><span>Deconnexion</span>
+    </button>
+  </mat-menu>
+</mat-toolbar>
+
+<!-- CONTENU PAGE JALONS -->
+<div class="layout">
+  <!-- HERO -->
+  <section class="hero">
+    <div>
+      <p class="eyebrow">Jalons de mission</p>
+      <h1>{{ missionTitle() }}</h1>
+      <p class="subtitle">
+        Structurez votre mission en etapes claires, validez les livrables et declenchez les paiements en toute securite.
+      </p>
+
+      <div class="hero__chips">
+        <span class="pill pill--primary">
+          <mat-icon>flag_circle</mat-icon>
+          Workflow par jalons
+        </span>
+        <span class="pill pill--ghost">
+          <mat-icon>payments</mat-icon>
+          Paiement securise via wallet
+        </span>
+      </div>
+
+      <div class="hero__tags">
+        <span class="tag">Mission client</span>
+        <span class="tag tag--accent">Suivi temps reel</span>
+      </div>
+
+      <div class="hero__actions">
+        <button mat-stroked-button color="primary" routerLink="/missions">
+          <mat-icon>arrow_back</mat-icon>
+          Retour aux missions
+        </button>
+      </div>
+    </div>
+
+    <div class="hero__panel">
+      <div class="hero__metric">
+        <span class="small muted">Total jalons</span>
+        <h2>{{ milestones().length || 0 }}</h2>
+        <p class="small muted">jalons definis pour cette mission</p>
+        <div class="meter">
+          <div
+    class="meter__fill"
+    [style.width.%]="((milestones().length || 0) * 25) > 100 ? 100 : ((milestones().length || 0) * 25)"
+  ></div>
+        </div>
+      </div>
+      <div class="hero__mini-list">
+        <div class="mini-row">
+          <mat-icon>euro</mat-icon>
+          <div>
+            <div>Montant cumule</div>
+            <div class="small muted">
+              {{ total() | currency:'EUR':'symbol':'1.0-0' }}
+            </div>
+          </div>
+        </div>
+        <div class="mini-row">
+          <mat-icon>task_alt</mat-icon>
+          <div>
+            <div>Etat global</div>
+            <div class="small muted">
+              {{ milestones().length ? 'Suivi en cours' : 'En attente de premiers jalons' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GRILLE PRINCIPALE -->
+  <div class="main-grid">
+    <!-- FORMULAIRE CREATION JALON -->
+    <mat-card class="panel panel--form" appearance="outlined">
+      <div class="panel__header">
+        <div>
+          <h2>Creer un nouveau jalon</h2>
+          <p>Definissez les etapes cles de la mission et le montant associe a chacune.</p>
+        </div>
+      </div>
+      <mat-card-content>
+        <form [formGroup]="form" class="form-grid" (ngSubmit)="create()">
+          <mat-form-field appearance="outline">
+            <mat-label>Titre *</mat-label>
+            <input matInput formControlName="title" placeholder="Ex : Maquette Figma validee" />
+            <mat-error *ngIf="form.controls.title.hasError('required')">Requis</mat-error>
+            <mat-error *ngIf="form.controls.title.hasError('minlength')">
+              3 caracteres minimum.
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-grid__full">
+            <mat-label>Description</mat-label>
+            <textarea
+              matInput
+              rows="3"
+              formControlName="description"
+              placeholder="Precisez le contenu du livrable, les criteres de validation, etc."
+            ></textarea>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Montant (€) *</mat-label>
+            <input matInput type="number" formControlName="amount" placeholder="Ex : 300" />
+            <mat-icon matSuffix>euro</mat-icon>
+            <mat-error *ngIf="form.controls.amount.hasError('required')">Requis</mat-error>
+            <mat-error *ngIf="form.controls.amount.hasError('min')">
+              Doit etre strictement superieur a 0.
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Date d'echeance</mat-label>
+            <input matInput type="date" formControlName="dueDate" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Ordre dans la mission</mat-label>
+            <input matInput type="number" formControlName="orderIndex" placeholder="Ex : 1" />
+            <mat-error *ngIf="form.controls.orderIndex.hasError('required')">Requis</mat-error>
+            <mat-error *ngIf="form.controls.orderIndex.hasError('min')">
+              Doit etre superieur ou egal a 1.
+            </mat-error>
+          </mat-form-field>
+
+          <div class="form-actions">
+            <div class="form-actions__info">
+              <span class="muted">Total de tous les jalons :</span>
+              <strong>{{ total() | currency:'EUR':'symbol':'1.0-0' }}</strong>
+            </div>
+            <span class="spacer"></span>
+            <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || sending()">
+              <mat-icon>add</mat-icon>
+              Creer le jalon
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- COLONNE DROITE : WALLET + LISTE -->
+    <div class="secondary-grid">
+      <!-- WALLET -->
+      <mat-card class="panel wallet-card" appearance="outlined">
+        <div class="panel__header">
+          <div>
+            <h2>Wallet & paiement</h2>
+            <p>Associez le freelancer accepte et recharger votre wallet avant de payer les jalons.</p>
+          </div>
+        </div>
+        <mat-card-content>
+          <div class="wallet-summary">
+            <div class="wallet-summary__item">
+              <span class="muted">Solde wallet</span>
+              <strong>
+                <ng-container *ngIf="!walletLoading(); else walletLoader">
+                  {{ (clientWallet()?.balance || 0) | currency: (clientWallet()?.currency || 'EUR'):'symbol' }}
+                </ng-container>
+              </strong>
+            </div>
+            <div class="wallet-summary__item">
+              <span class="muted">Devise</span>
+              <strong>{{ clientWallet()?.currency || 'EUR' }}</strong>
+            </div>
+          </div>
+
+          <ng-template #walletLoader>
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+          </ng-template>
+
+          <form class="payout-tools" [formGroup]="payoutForm">
+            <div class="payout-tools__row">
+              <mat-form-field appearance="outline">
+                <mat-label>ID du freelancer accepte *</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  formControlName="freelancerId"
+                  placeholder="Ex : 12"
+                />
+                <mat-error *ngIf="payoutForm.controls.freelancerId.hasError('required')">
+                  Indiquez l'ID du freelancer accepte.
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Recharger le wallet (EUR)</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  formControlName="topupAmount"
+                  placeholder="Ex : 500"
+                />
+                <mat-error *ngIf="payoutForm.controls.topupAmount.hasError('min')">
+                  Montant positif requis.
+                </mat-error>
+              </mat-form-field>
+
+              <button
+                mat-stroked-button
+                color="primary"
+                type="button"
+                (click)="topUpWallet()"
+                [disabled]="paying()"
+                class="payout-tools__button"
+              >
+                <mat-icon>arrow_upward</mat-icon>
+                Recharger
+              </button>
+            </div>
+          </form>
+
+          <div class="transactions">
+            <div class="transactions__head">
+              <h3>Historique des paiements</h3>
+              <span class="muted">{{ walletTransactions().length }} ligne(s)</span>
+            </div>
+            <mat-progress-bar *ngIf="transactionsLoading()" mode="indeterminate"></mat-progress-bar>
+            <div class="transactions__list" *ngIf="!transactionsLoading() && walletTransactions().length">
+              <div class="transaction" *ngFor="let tx of walletTransactions() | slice:0:5">
+                <div>
+                  <div class="transaction__amount">
+                    {{ tx.amount | currency:(tx.currency || 'EUR'):'symbol' }}
+                  </div>
+                  <div class="small muted">
+                    {{ tx.description || 'Paiement jalon' }}
+                  </div>
+                </div>
+                <div class="transaction__meta">
+                  <span class="status-pill" [ngClass]="'status-' + (tx.status || 'PENDING').toLowerCase()">
+                    {{ tx.status || 'PENDING' }}
+                  </span>
+                  <span class="small muted">{{ tx.processedAt || tx.createdAt | date:'dd/MM HH:mm' }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="transactions__empty" *ngIf="!transactionsLoading() && !walletTransactions().length">
+              <span class="muted">Aucune transaction encore.</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- LISTE JALONS -->
+      <mat-card class="panel list-card" appearance="outlined">
+        <div class="panel__header">
+          <div>
+            <h2>Suivi des jalons</h2>
+            <p>Visualisez l'avancement, validez les livrables et declenchez les paiements.</p>
+          </div>
+        </div>
+        <mat-card-content>
+          <mat-progress-bar *ngIf="loading()" mode="indeterminate"></mat-progress-bar>
+
+          <div class="panel__error" *ngIf="!loading() && error()">
+            <mat-icon>error_outline</mat-icon>
+            <span>{{ error() }}</span>
+          </div>
+
+          <mat-list *ngIf="!loading() && !error()">
+            <mat-list-item
+              *ngFor="let m of milestones()"
+              class="milestone-item"
+              [ngClass]="'status-' + (m.status || 'PENDING').toLowerCase()"
+            >
+              <div class="milestone-item__content">
+                <div class="milestone-item__header">
+                  <div>
+                    <div class="milestone-item__title">
+                      {{ m.title }}
+                    </div>
+                    <div class="milestone-item__subtitle muted" *ngIf="m.description">
+                      {{ m.description }}
+                    </div>
+                  </div>
+
+                  <div class="milestone-item__amount">
+                    <mat-icon>payments</mat-icon>
+                    <span>{{ m.amount | currency:'EUR' }}</span>
+                  </div>
+                </div>
+
+                <div class="milestone-item__meta">
+                  <mat-chip
+                    [color]="m.status === 'PAID'
+                      ? 'primary'
+                      : m.status === 'VALIDATED'
+                        ? 'accent'
+                        : undefined"
+                    selected
+                  >
+                    {{ statusLabel(m.status) }}
+                  </mat-chip>
+
+                  <span *ngIf="m.dueDate">
+                    <mat-icon>event</mat-icon>
+                    Echeance : {{ m.dueDate | date:'dd MMM' }}
+                  </span>
+
+                  <span *ngIf="m.paidAt">
+                    <mat-icon>task_alt</mat-icon>
+                    Paye le {{ m.paidAt | date:'dd MMM' }}
+                  </span>
+
+                  <span *ngIf="m.rejectionReason">
+                    <mat-icon>report</mat-icon>
+                    {{ m.rejectionReason }}
+                  </span>
+                </div>
+
+                <div class="actions">
+                  <button
+                    mat-button
+                    color="primary"
+                    *ngIf="m.status === 'PENDING' || m.status === 'REJECTED'"
+                    (click)="markDelivered(m.id!)"
+                  >
+                    <mat-icon>check</mat-icon>
+                    Marquer livre
+                  </button>
+
+                  <button
+                    mat-stroked-button
+                    color="primary"
+                    *ngIf="m.status === 'PENDING_VALIDATION' || m.status === 'DELIVERED'"
+                    (click)="validate(m.id!)"
+                  >
+                    <mat-icon>verified</mat-icon>
+                    Valider
+                  </button>
+
+                  <button
+                    mat-button
+                    color="warn"
+                    *ngIf="m.status === 'PENDING_VALIDATION' || m.status === 'DELIVERED'"
+                    (click)="reject(m.id!)"
+                  >
+                    <mat-icon>highlight_off</mat-icon>
+                    Refuser
+                  </button>
+
+                  <button
+                    mat-flat-button
+                    color="accent"
+                    *ngIf="m.status === 'VALIDATED'"
+                    (click)="payMilestone(m)"
+                    [disabled]="paying()"
+                  >
+                    <mat-icon>payments</mat-icon>
+                    Payer le jalon
+                  </button>
+
+                  <button
+                    mat-button
+                    color="warn"
+                    *ngIf="m.status === 'PENDING_VALIDATION' || m.status === 'REJECTED' || m.status === 'DELIVERED'"
+                    (click)="revert(m.id!)"
+                  >
+                    <mat-icon>undo</mat-icon>
+                    Remettre en attente
+                  </button>
+
+                  <mat-chip color="primary" selected *ngIf="m.status === 'PAID'">
+                    <mat-icon>done_all</mat-icon>
+                    Paiement envoye
+                  </mat-chip>
+                </div>
+              </div>
+            </mat-list-item>
+
+            <div class="empty" *ngIf="!milestones().length">
+              <mat-icon>flag</mat-icon>
+              <p>Aucun jalon defini pour cette mission pour le moment.</p>
+              <span class="muted">
+                Creez un premier jalon a gauche pour structurer votre mission.
+              </span>
+            </div>
+          </mat-list>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- FINALISATION -->
+      <mat-card class="panel finalize-card" appearance="outlined">
+        <div class="panel__header">
+          <div>
+            <h2>Cloture & evaluation</h2>
+            <p>Cloturez la mission quand le freelance a soumis la livraison finale.</p>
+          </div>
+          <mat-chip color="primary" selected *ngIf="missionStatus() === 'PENDING_CLOSURE'">
+            En attente de votre cloture
+          </mat-chip>
+        </div>
+        <mat-card-content>
+          <div class="panel__error" *ngIf="!canFinalize()">
+            <mat-icon>info</mat-icon>
+            <span>Cloture disponible lorsque les jalons sont valides/payes.</span>
+          </div>
+
+          <div class="form-actions">
+            <span class="muted">Le dernier paiement manquant sera declenche automatiquement.</span>
+            <span class="spacer"></span>
+            <button mat-flat-button color="primary" type="button" (click)="closeMission()" [disabled]="!canFinalize() || closing()">
+              <mat-icon>verified</mat-icon>
+              {{ closing() ? 'Cloture...' : 'Cloturer la mission' }}
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+      <app-mission-feedback-button
+        *ngIf="missionInfo"
+        [mission]="missionInfo"
+        context="client">
+      </app-mission-feedback-button>
+    </div>
+  </div>
+</div>

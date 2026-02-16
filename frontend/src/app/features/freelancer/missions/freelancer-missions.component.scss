@@ -1,0 +1,424 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 30%, #ffffff 100%);
+  padding: clamp(1.5rem, 3vw, 3rem);
+  color: #0f172a;
+
+  /* palette globale */
+  --tw-color-bg: #f3f4f6;
+  --tw-color-surface: #ffffff;
+  --tw-color-primary: #2563eb;
+  --tw-color-primary-soft: #dbeafe;
+  --tw-color-primary-strong: #1d4ed8;
+
+  --tw-color-accent: #8b5cf6;
+  --tw-color-accent-soft: #ede9fe;
+
+  --tw-color-danger: #dc2626;
+  --tw-color-danger-soft: #fee2e2;
+
+  --tw-color-muted: #6b7280;
+  --tw-color-border: #e5e7eb;
+}
+
+/* === NAVBAR FREELANCE === */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 0 2.5rem;
+  background: linear-gradient(180deg, #e5f0ff 0%, #f8fbff 100%);
+  box-shadow: 0 8px 20px -18px rgba(15, 23, 42, 0.65);
+
+  display: flex;
+  align-items: center;
+}
+
+/* Logo + nom */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  text-decoration: none;
+  color: #0f172a;
+}
+
+.brand-name {
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+/* Liens nav */
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-left: 2.5rem;
+}
+
+.nav a {
+  font-weight: 500;
+  font-size: 0.95rem;
+  text-transform: none;
+}
+
+.nav a.active {
+  color: #1d4ed8;
+}
+
+/* Spacer droite */
+.spacer {
+  flex: 1 1 auto;
+}
+
+.dark-toggle {
+  margin-right: 0.75rem;
+}
+
+mat-toolbar.topbar {
+  min-height: 64px;
+}
+
+/* ==== PAGE MISSIONS ==== */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.page--freelancer-missions {
+  padding-bottom: 1.5rem;
+}
+
+.page__head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.page__head-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.page__head-stats {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  color: var(--tw-color-muted);
+}
+
+.muted {
+  color: var(--tw-color-muted);
+}
+
+/* Alert / erreurs */
+
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--tw-color-border);
+  background: var(--tw-color-surface);
+  font-size: 0.9rem;
+}
+
+.alert--error {
+  background: var(--tw-color-danger-soft);
+  border-color: #fecaca;
+  color: var(--tw-color-danger);
+}
+
+.alert--error mat-icon {
+  color: var(--tw-color-danger);
+}
+
+/* État vide */
+
+.empty-state {
+  margin-top: 1.5rem;
+  padding: 2rem 1.5rem;
+  border-radius: 18px;
+  border: 1px dashed rgba(148, 163, 184, 0.8);
+  background: radial-gradient(circle at top left, #eff6ff, #f9fafb);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+
+.empty-state mat-icon {
+  font-size: 40px;
+  margin-bottom: 0.25rem;
+  color: var(--tw-color-primary-strong);
+}
+
+/* Stat pill */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.pill--ghost {
+  background: var(--tw-color-primary-soft);
+  border: 1px solid rgba(37, 99, 235, 0.35);
+  color: var(--tw-color-primary-strong);
+}
+
+.pill--ghost mat-icon {
+  font-size: 18px;
+}
+
+/* Grille missions */
+
+.mission-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 1.25rem;
+}
+
+.mission-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border-radius: 18px;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: var(--tw-color-surface);
+}
+
+.mission-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.08), transparent 55%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+
+.mission-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+  border-color: rgba(37, 99, 235, 0.6);
+}
+
+.mission-card:hover::before {
+  opacity: 1;
+}
+
+/* Bandeau haut mission */
+
+.mission-card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1rem 0.75rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.4);
+  background: linear-gradient(
+    135deg,
+    rgba(37, 99, 235, 0.06),
+    rgba(129, 140, 248, 0.06),
+    rgba(255, 255, 255, 1)
+  );
+}
+
+.mission-card__title h2 {
+  margin: 0.1rem 0 0.2rem;
+  font-size: 1.15rem;
+}
+
+.mission-card__subtitle {
+  font-size: 0.9rem;
+  max-width: 36rem;
+}
+
+.mission-card__badge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+}
+
+.complete-btn mat-icon {
+  margin-right: 0.25rem;
+}
+
+/* Métadonnées mission */
+
+.mission-card__meta {
+  padding: 0.6rem 1rem 0.4rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.6rem;
+}
+
+.meta-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  font-size: 0.9rem;
+}
+
+.meta-item mat-icon {
+  font-size: 18px;
+  margin-top: 1px;
+  color: #64748b;
+}
+
+.meta-label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9ca3af;
+}
+
+.meta-value {
+  display: block;
+  font-weight: 500;
+  color: #111827;
+}
+
+/* Jalons */
+
+.milestones {
+  margin: 0.2rem 1rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--tw-color-border);
+  background: #f9fafb;
+  padding: 0.75rem 0.75rem 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.milestones__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.milestones__head h3 {
+  margin: 0;
+  font-size: 0.98rem;
+}
+
+.milestones__table {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.milestones__row {
+  display: grid;
+  grid-template-columns: 1.3fr 1.5fr 0.7fr 0.9fr 0.7fr 0.9fr;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.35rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  transition: background 0.12s ease;
+}
+
+.milestones__row--head {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #6b7280;
+  border-bottom-width: 1px;
+  background: rgba(15, 23, 42, 0.02);
+}
+
+.milestones__row:hover:not(.milestones__row--head) {
+  background: rgba(219, 234, 254, 0.45);
+}
+
+.milestones__row .title {
+  font-weight: 500;
+}
+
+.milestones__row .num {
+  text-align: right;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+/* État vide jalons */
+
+.milestones__empty {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+  padding: 0.45rem 0.25rem;
+  color: #6b7280;
+}
+
+.milestones__empty mat-icon {
+  font-size: 20px;
+  margin-top: 2px;
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+  .mission-card__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .mission-card__badge {
+    align-self: flex-end;
+  }
+}
+
+@media (max-width: 720px) {
+  :host {
+    padding: 1.5rem;
+  }
+
+  .mission-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .milestones__row {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+  }
+
+  .milestones__row--head {
+    display: none;
+  }
+
+  .milestones__row .num {
+    text-align: left;
+  }
+}

@@ -1,0 +1,120 @@
+<!-- NAVBAR FREELANCER -->
+<mat-toolbar class="topbar" role="navigation" aria-label="Navigation administrateur">
+  <div class="brand" routerLink="/admin" routerLinkActive="active" aria-label="ToWork dashboard">
+    <!-- logo SVG -->
+    <svg class="logo-svg" width="34" height="34" viewBox="0 0 48 48" role="img" aria-label="ToWork logo">
+      <defs>
+        <linearGradient id="twg-admin" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#2563eb"/>
+          <stop offset="100%" stop-color="#7c3aed"/>
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#twg-admin)"/>
+      <path d="M14 18h20a2 2 0 0 0 0-4H14a2 2 0 0 0 0 4zm8 2v14a2 2 0 0 0 4 0V20z" fill="white"/>
+    </svg>
+    <span class="brand-name">ToWork</span>
+  </div>
+
+  <nav class="nav" aria-label="Liens administrateur">
+    <a mat-button routerLink="/freelancer" routerLinkActive="active">Tableau de bord</a>
+    <a mat-button routerLink="/freelancer/candidatures" routerLinkActive="active">candidatures</a>
+     <a mat-button routerLink="/freelancer/missions" routerLinkActive="active">Mes Mission </a>
+    <a mat-button routerLink="/freelancer/portfolio" routerLinkActive="active">portfolio</a>
+  </nav>
+
+  <span class="spacer"></span>
+
+  <mat-slide-toggle class="dark-toggle" (change)="toggleDark($event.checked)">
+    Dark
+  </mat-slide-toggle>
+
+  <button mat-icon-button matBadge="5" matBadgeColor="accent" aria-label="Notifications">
+    <mat-icon>notifications</mat-icon>
+  </button>
+
+  <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Profil administrateur">
+    <mat-icon>shield_person</mat-icon>
+  </button>
+
+  <mat-menu #userMenu="matMenu">
+    <button mat-menu-item routerLink="/profile">
+      <mat-icon>person</mat-icon><span>Profil</span>
+    </button>
+    <button mat-menu-item routerLink="/settings">
+      <mat-icon>settings</mat-icon><span>Parametres</span>
+    </button>
+    <mat-divider></mat-divider>
+    <button mat-menu-item (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      <span>Deconnexion</span>
+    </button>
+  </mat-menu>
+</mat-toolbar>
+
+<section class="page">
+  <header class="page__head">
+    <div>
+      <p class="eyebrow">Revenus</p>
+      <h1>Portfolio</h1>
+      <p class="muted">Suivi des jalons payes et du montant total gagne.</p>
+    </div>
+    <button mat-stroked-button color="primary" type="button" (click)="load()">
+      <mat-icon>refresh</mat-icon>
+      Actualiser
+    </button>
+  </header>
+
+  <mat-progress-bar *ngIf="loading()" mode="indeterminate"></mat-progress-bar>
+
+  <div class="state state--error" *ngIf="!loading() && error()">
+    <mat-icon>error_outline</mat-icon>
+    <div>
+      <p>{{ error() }}</p>
+      <small>Reessayer ou contactez le support si besoin.</small>
+    </div>
+    <button mat-button color="primary" type="button" (click)="load()">
+      Reessayer
+    </button>
+  </div>
+
+  <mat-card appearance="outlined" class="summary">
+    <div>
+      <p class="eyebrow">Total gagne</p>
+      <h2>{{ formatAmount(totalEarned(), 'EUR') }}</h2>
+      <p class="muted">{{ paidMilestones().length }} jalon(s) paye(s)</p>
+    </div>
+  </mat-card>
+
+  <mat-card appearance="outlined" class="transactions">
+    <div class="transactions__head">
+      <div>
+        <p class="eyebrow">Historique</p>
+        <h3>Jalons payes</h3>
+      </div>
+      <span class="muted">{{ paidMilestones().length }} ligne(s)</span>
+    </div>
+
+    <div class="table">
+      <div class="table__row table__row--head">
+        <div>Date</div>
+        <div>Mission</div>
+        <div>Jalon</div>
+        <div>Montant</div>
+      </div>
+
+      <div class="table__row" *ngFor="let item of paidMilestones()">
+        <div>{{ item.paidAt ? (item.paidAt | date:'dd MMM yyyy') : '-' }}</div>
+        <div>{{ item.missionTitle || '-' }}</div>
+        <div>{{ item.milestoneTitle || '-' }}</div>
+        <div class="table__amount">{{ formatAmount(item.amount || 0, 'EUR') }}</div>
+      </div>
+
+      <div class="table__row table__row--empty" *ngIf="!paidMilestones().length">
+        <div class="empty">
+          <mat-icon>hourglass_empty</mat-icon>
+          <p>Aucun jalon paye pour le moment.</p>
+        </div>
+      </div>
+    </div>
+  </mat-card>
+</section>

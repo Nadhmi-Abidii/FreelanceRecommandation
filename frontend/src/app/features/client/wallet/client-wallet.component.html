@@ -1,0 +1,155 @@
+<!-- NAVBAR (same as dashboard) -->
+<mat-toolbar class="topbar" role="navigation" aria-label="Navigation principale">
+  <div class="brand" routerLink="/dashboard" aria-label="ToWork home">
+    <!-- SVG LOGO -->
+    <svg class="logo-svg" width="34" height="34" viewBox="0 0 48 48" role="img" aria-label="ToWork logo">
+      <defs>
+        <linearGradient id="twg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#2563eb" />
+          <stop offset="100%" stop-color="#7c3aed" />
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#twg)" />
+      <path
+        d="M14 18h20a2 2 0 0 0 0-4H14a2 2 0 0 0 0 4zm8 2v14a2 2 0 0 0 4 0V20z"
+        fill="white"
+      />
+    </svg>
+    <span class="brand-name">ToWork</span>
+  </div>
+
+  <nav class="nav">
+    <a mat-button routerLink="/dashboard" routerLinkActive="active">Tableau de bord</a>
+    <a mat-button routerLink="/missions/new" routerLinkActive="active">Créer une mission</a>
+    <a mat-button routerLink="/missions" routerLinkActive="active">Mes missions</a>
+    <a mat-button routerLink="/candidatures" routerLinkActive="active">Candidatures</a>
+    <a mat-button routerLink="/wallet" routerLinkActive="active">Mon wallet</a>
+  </nav>
+
+  <span class="spacer"></span>
+
+  <mat-slide-toggle class="dark-toggle" (change)="toggleDark($event.checked)">
+    Dark
+  </mat-slide-toggle>
+
+  <button mat-icon-button matBadge="3" matBadgeColor="accent" aria-label="Notifications">
+    <mat-icon>notifications</mat-icon>
+  </button>
+
+  <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Profil">
+    <mat-icon>account_circle</mat-icon>
+  </button>
+
+  <mat-menu #userMenu="matMenu">
+    <button mat-menu-item routerLink="/profile">
+      <mat-icon>person</mat-icon>
+      <span>Profil</span>
+    </button>
+    <button mat-menu-item routerLink="/settings">
+      <mat-icon>settings</mat-icon>
+      <span>Paramètres</span>
+    </button>
+    <mat-divider></mat-divider>
+    <button mat-menu-item (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      <span>Déconnexion</span>
+    </button>
+  </mat-menu>
+</mat-toolbar>
+
+<!-- TON ANCIEN CODE, INCHANGÉ -->
+<section class="page">
+  <header class="page__head">
+    <div>
+      <p class="eyebrow">Finances</p>
+      <h1>Mon wallet</h1>
+      <p class="muted">Solde disponible et mouvements recents.</p>
+    </div>
+    <button mat-flat-button color="primary" type="button" (click)="toggleRecharge()">
+      <mat-icon>account_balance_wallet</mat-icon>
+      Recharger
+    </button>
+  </header>
+
+  <mat-progress-bar *ngIf="loading()" mode="indeterminate"></mat-progress-bar>
+
+  <div class="state state--error" *ngIf="!loading() && error()">
+    <mat-icon>error_outline</mat-icon>
+    <div>
+      <p>{{ error() }}</p>
+      <small>Veuillez reessayer ou verifier votre connexion.</small>
+    </div>
+    <button mat-stroked-button color="primary" type="button" (click)="load()">
+      Reessayer
+    </button>
+  </div>
+
+  <mat-card appearance="outlined" class="summary">
+    <div>
+      <p class="eyebrow">Solde disponible</p>
+      <h2>{{ formatAmount(balance(), currency()) }}</h2>
+      <p class="muted">Devise : {{ currency() }}</p>
+    </div>
+    <div class="summary__actions">
+      <button mat-flat-button color="primary" type="button" (click)="toggleRecharge()">
+        <mat-icon>add</mat-icon>
+        Recharger
+      </button>
+    </div>
+  </mat-card>
+
+  <mat-card appearance="outlined" class="recharge" *ngIf="showRecharge()">
+    <form class="recharge__form" [formGroup]="form" (ngSubmit)="recharge()">
+      <mat-form-field appearance="outline">
+        <mat-label>Montant a ajouter</mat-label>
+        <input matInput type="number" formControlName="amount" min="1" placeholder="Ex : 200">
+        <mat-error *ngIf="form.controls.amount.hasError('required')">Montant requis</mat-error>
+        <mat-error *ngIf="form.controls.amount.hasError('min')">1 EUR minimum</mat-error>
+      </mat-form-field>
+      <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || recharging()">
+        <mat-icon>credit_score</mat-icon>
+        Confirmer
+      </button>
+    </form>
+  </mat-card>
+
+  <mat-card appearance="outlined" class="transactions">
+    <div class="transactions__head">
+      <div>
+        <p class="eyebrow">Historique</p>
+        <h3>Transactions</h3>
+      </div>
+      <span class="muted">{{ transactions().length }} ligne(s)</span>
+    </div>
+
+    <div class="table">
+      <div class="table__row table__row--head">
+        <div>Date</div>
+        <div>Type</div>
+        <div>Mission</div>
+        <div>Jalon</div>
+        <div>Montant</div>
+      </div>
+
+      <div
+        class="table__row"
+        *ngFor="let tx of transactions()"
+      >
+        <div>{{ tx.createdAt | date:'dd MMM yyyy' }}</div>
+        <div>
+          <mat-chip [color]="txChipColor(tx.type)" selected>{{ tx.type }}</mat-chip>
+        </div>
+        <div>{{ tx.missionTitle || '-' }}</div>
+        <div>{{ tx.milestoneTitle || '-' }}</div>
+        <div class="table__amount">{{ formatAmount(tx.amount, tx.currency) }}</div>
+      </div>
+
+      <div class="table__row table__row--empty" *ngIf="!transactions().length">
+        <div class="empty">
+          <mat-icon>receipt_long</mat-icon>
+          <p>Aucune transaction pour le moment.</p>
+        </div>
+      </div>
+    </div>
+  </mat-card>
+</section>

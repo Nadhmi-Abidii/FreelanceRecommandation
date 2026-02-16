@@ -1,0 +1,240 @@
+<mat-toolbar class="topbar" role="navigation" aria-label="Navigation administrateur">
+  <div class="brand" routerLink="/admin" routerLinkActive="active" aria-label="ToWork dashboard">
+    <!-- logo SVG -->
+    <svg class="logo-svg" width="34" height="34" viewBox="0 0 48 48" role="img" aria-label="ToWork logo">
+      <defs>
+        <linearGradient id="twg-admin" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#2563eb"/>
+          <stop offset="100%" stop-color="#7c3aed"/>
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#twg-admin)"/>
+      <path d="M14 18h20a2 2 0 0 0 0-4H14a2 2 0 0 0 0 4zm8 2v14a2 2 0 0 0 4 0V20z" fill="white"/>
+    </svg>
+    <span class="brand-name">ToWork</span>
+  </div>
+
+  <nav class="nav" aria-label="Liens administrateur">
+    <a mat-button routerLink="/freelancer" routerLinkActive="active">Tableau de bord</a>
+    <!-- <a mat-button routerLink="/freelancer/missions" routerLinkActive="active">missions</a> -->
+    <a mat-button routerLink="/freelancer/candidatures" routerLinkActive="active">candidatures</a>
+    <a mat-button routerLink="/freelancer/missions" routerLinkActive="active">Mes Mission </a>
+    <a mat-button routerLink="/freelancer/portfolio" routerLinkActive="active">portfolio</a>
+    
+  </nav>
+
+  <span class="spacer"></span>
+
+  <mat-slide-toggle class="dark-toggle" (change)="toggleDark($event.checked)">
+    Dark
+  </mat-slide-toggle>
+
+  <button mat-icon-button matBadge="5" matBadgeColor="accent" aria-label="Notifications">
+    <mat-icon>notifications</mat-icon>
+  </button>
+
+  <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Profil administrateur">
+    <mat-icon>shield_person</mat-icon>
+  </button>
+
+  <mat-menu #userMenu="matMenu">
+    <button mat-menu-item routerLink="/profile"><mat-icon>person</mat-icon><span>Profil</span></button>
+    <button mat-menu-item routerLink="/settings"><mat-icon>settings</mat-icon><span>Paramètres</span></button>
+    <mat-divider></mat-divider>
+  <button mat-menu-item (click)="logout()">
+    <mat-icon>logout</mat-icon>
+    <span>Déconnexion</span>
+  </button>  </mat-menu>
+</mat-toolbar>
+
+
+<section class="dashboard">
+  <header class="dashboard__hero">
+    <div class="dashboard__intro">
+      <h1>Bonjour {{ user()?.firstName ?? 'Freelancer' }} 👋</h1>
+      <p>Retrouvez les missions qui correspondent le mieux à vos compétences et avancez dans vos candidatures.</p>
+      <div class="dashboard__hero-actions">
+        <button mat-stroked-button color="primary" (click)="filterForm.patchValue({ status: 'all' })">
+          <mat-icon>autorenew</mat-icon>
+          Réinitialiser les filtres
+        </button>
+        <button mat-flat-button color="primary" (click)="filterForm.patchValue({ status: 'OPEN' })">
+          <mat-icon>trending_up</mat-icon>
+          Voir les nouvelles opportunités
+        </button>
+      </div>
+    </div>
+    <mat-card class="dashboard__insight-card" appearance="outlined">
+      <mat-card-header>
+        <mat-icon mat-card-avatar color="primary">stars</mat-icon>
+        <mat-card-title>Votre objectif du jour</mat-card-title>
+        <mat-card-subtitle>Boostez votre visibilité</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Mettez à jour votre portfolio et envoyez au moins 2 messages personnalisés à des clients prioritaires.</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-button color="primary" (click)="filterForm.patchValue({ urgency: 'URGENT' })">
+          Identifier les missions urgentes
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </header>
+
+  <section class="dashboard__metrics" aria-label="Statistiques personnelles">
+    <mat-card class="metric metric--total" appearance="outlined">
+      <div class="metric__header">
+        <mat-icon>work_outline</mat-icon>
+        <span>Total missions</span>
+      </div>
+      <strong>{{ metrics().total }}</strong>
+      <p>Opportunités actives cette semaine</p>
+    </mat-card>
+
+    <mat-card class="metric metric--urgent" appearance="outlined">
+      <div class="metric__header">
+        <mat-icon>bolt</mat-icon>
+        <span>Missions urgentes</span>
+      </div>
+      <strong>{{ metrics().urgent }}</strong>
+      <p>À traiter en priorité</p>
+    </mat-card>
+
+    <mat-card class="metric metric--interview" appearance="outlined">
+      <div class="metric__header">
+        <mat-icon>calendar_today</mat-icon>
+        <span>Entretiens programmés</span>
+      </div>
+      <strong>{{ metrics().interviewing }}</strong>
+      <p>Préparez vos rendez-vous</p>
+    </mat-card>
+
+    <mat-card class="metric metric--applied" appearance="outlined">
+      <div class="metric__header">
+        <mat-icon>send</mat-icon>
+        <span>Candidatures envoyées</span>
+      </div>
+      <strong>{{ metrics().applied }}</strong>
+      <p>Suivez vos relances</p>
+    </mat-card>
+  </section>
+
+  <mat-card class="dashboard__filters" appearance="outlined">
+    <form [formGroup]="filterForm" class="filters__form" aria-label="Filtres de recherche">
+      <mat-form-field appearance="outline" class="filters__field filters__field--search">
+        <mat-label>Rechercher une mission</mat-label>
+        <input matInput formControlName="search" placeholder="Ex: Angular, UX, Snowflake">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filters__field">
+        <mat-label>Statut</mat-label>
+        <mat-select formControlName="status">
+          <mat-option *ngFor="let option of statusFilters" [value]="option.value">{{ option.label }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filters__field">
+        <mat-label>Urgence</mat-label>
+        <mat-select formControlName="urgency">
+          <mat-option *ngFor="let option of urgencyFilters" [value]="option.value">{{ option.label }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filters__field">
+        <mat-label>Trier par</mat-label>
+        <mat-select formControlName="sort">
+          <mat-option *ngFor="let option of sortOptions" [value]="option.value">{{ option.label }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </form>
+  </mat-card>
+
+  <section class="dashboard__state" *ngIf="loading()">
+    <mat-progress-bar mode="indeterminate" color="primary"></mat-progress-bar>
+    <p>Chargement des missions en cours...</p>
+  </section>
+
+  <section class="dashboard__error" *ngIf="!loading() && error()">
+    <mat-icon>error_outline</mat-icon>
+    <div>
+      <p>{{ error() }}</p>
+      <button mat-stroked-button color="primary" (click)="reload()">Réessayer</button>
+    </div>
+  </section>
+
+  <section class="dashboard__missions" aria-live="polite">
+    <div *ngIf="!loading() && !error() && !hasResults()" class="dashboard__empty">
+      <mat-icon>search_off</mat-icon>
+      <h2>Aucune mission ne correspond à vos filtres</h2>
+      <p>Essayez d'élargir votre recherche ou explorez les missions urgentes.</p>
+      <button mat-stroked-button color="primary" (click)="filterForm.reset({ search: '', status: 'all', urgency: 'all', sort: 'newest' })">
+        Réinitialiser la recherche
+      </button>
+    </div>
+
+    <article *ngFor="let mission of filteredMissions(); trackBy: trackMission" class="mission-card">
+      <mat-card appearance="outlined">
+        <mat-card-header>
+          <mat-card-title>
+            {{ mission.title }}
+            <button type="button"
+                    mat-icon-button
+                    [matTooltip]="mission.isSaved ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+                    (click)="toggleSaved(mission)">
+              <mat-icon color="warn">{{ mission.isSaved ? 'bookmark' : 'bookmark_border' }}</mat-icon>
+            </button>
+          </mat-card-title>
+          <mat-card-subtitle>{{ mission.clientName }} · {{ mission.domaine }}</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <p class="mission-card__summary">{{ mission.summary }}</p>
+
+          <div class="mission-card__meta">
+            <span>
+              <mat-icon>payments</mat-icon>
+              {{ mission.budget }}
+            </span>
+            <span>
+              <mat-icon>location_on</mat-icon>
+              {{ mission.location }}
+            </span>
+            <span>
+              <mat-icon>schedule</mat-icon>
+              {{ mission.duration }} · {{ mission.weeklyRhythm }}
+            </span>
+          </div>
+
+          <div class="mission-card__chips">
+            <mat-chip-set aria-label="Mots-clés de la mission">
+              <mat-chip [ngClass]="['chip', 'chip--status', 'chip--status-' + mission.status.toLowerCase()]">
+                {{ getStatusLabel(mission.status) }}
+              </mat-chip>
+              <mat-chip [ngClass]="['chip', 'chip--urgency', mission.urgency === 'URGENT' ? 'chip--urgent' : 'chip--standard']">
+                {{ getUrgencyLabel(mission.urgency) }} · {{ getDaysRemainingLabel(mission.deadline) }}
+              </mat-chip>
+              <mat-chip *ngFor="let tag of mission.tags | slice:0:3" class="chip">
+                {{ tag }}
+              </mat-chip>
+            </mat-chip-set>
+          </div>
+        </mat-card-content>
+
+        <mat-divider></mat-divider>
+
+        <mat-card-actions align="end">
+          <span class="mission-card__time">{{ getTimeAgo(mission.postedAt) }}</span>
+          <button mat-button color="primary" (click)="applyToMission(mission)">
+            <mat-icon>how_to_reg</mat-icon>
+            Marquer comme candidaté
+          </button>
+          <button mat-raised-button color="primary" (click)="openMission(mission)">
+            <mat-icon>open_in_new</mat-icon>
+            Voir les détails
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </article>
+  </section>
+</section>

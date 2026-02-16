@@ -1,0 +1,129 @@
+<mat-toolbar class="topbar" role="navigation" aria-label="Navigation client">
+  <div class="brand" routerLink="/dashboard" aria-label="ToWork dashboard">
+    <svg class="logo-svg" width="34" height="34" viewBox="0 0 48 48" role="img" aria-label="ToWork logo">
+      <defs>
+        <linearGradient id="twg-discuss" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#2563eb"/>
+          <stop offset="100%" stop-color="#7c3aed"/>
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#twg-discuss)"></rect>
+      <path d="M14 18h20a2 2 0 0 0 0-4H14a2 2 0 0 0 0 4zm8 2v14a2 2 0 0 0 4 0V20z" fill="white"></path>
+    </svg>
+    <span class="brand-name">ToWork</span>
+  </div>
+
+  <nav class="nav">
+    <a mat-button routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+    <a mat-button routerLink="/missions" routerLinkActive="active">Missions</a>
+    <a mat-button routerLink="/candidatures" routerLinkActive="active">Candidatures</a>
+    <a mat-button routerLink="/messages" routerLinkActive="active">Discussions</a>
+    <a mat-button routerLink="/client/wallet" routerLinkActive="active">Wallet</a>
+  </nav>
+  <span class="spacer"></span>
+  <button mat-icon-button aria-label="Notifications">
+    <mat-icon>notifications</mat-icon>
+  </button>
+</mat-toolbar>
+
+<section class="screen">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Discussions</p>
+      <h1>Conversations avec vos freelances</h1>
+      <p class="muted">Suivez vos échanges, envoyez des briefs et gardez l’historique par profil.</p>
+    </div>
+    <button mat-stroked-button color="primary" type="button" (click)="ngOnInit()">
+      <mat-icon>refresh</mat-icon>
+      Actualiser
+    </button>
+  </header>
+
+  <div class="grid">
+    <aside class="panel list">
+      <div class="panel__head">
+        <div>
+          <p class="eyebrow">Freelances</p>
+          <h2>{{ threads().length }} conversation{{ threads().length>1 ? 's' : '' }}</h2>
+        </div>
+      </div>
+
+      <mat-progress-bar *ngIf="loading()" mode="indeterminate"></mat-progress-bar>
+
+      <div class="panel__error" *ngIf="!loading() && error()">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ error() }}</span>
+      </div>
+
+      <div class="empty" *ngIf="!loading() && !error() && !threads().length">
+        <mat-icon>chat_bubble_outline</mat-icon>
+        <p>Aucune conversation pour le moment.</p>
+      </div>
+
+      <div
+        class="thread"
+        *ngFor="let t of threads()"
+        [class.is-active]="t.freelancerId === selectedFreelancer()"
+        (click)="select(t.freelancerId)"
+      >
+        <div class="avatar">{{ t.name.slice(0,1) }}</div>
+        <div class="thread__body">
+          <h3>{{ t.name }}</h3>
+          <p class="muted">{{ t.lastMessage || 'Aucun message' }}</p>
+        </div>
+        <span class="date">{{ t.lastDate | date:'dd MMM' }}</span>
+      </div>
+    </aside>
+
+    <section class="panel conversation" *ngIf="selectedThread() as thread">
+      <header class="conversation__head">
+        <div>
+          <p class="eyebrow">Conversation</p>
+          <h2>{{ thread.name }}</h2>
+          <p class="muted">{{ thread.headline || 'Freelancer' }}</p>
+        </div>
+      </header>
+
+      <mat-progress-bar *ngIf="loading()" mode="indeterminate"></mat-progress-bar>
+
+      <div class="conversation__body" *ngIf="!loading()">
+        <div
+          class="bubble"
+          *ngFor="let msg of conversation()"
+          [class.is-client]="msg.author === 'client'"
+        >
+          <div class="bubble__meta">
+            <span>{{ msg.author === 'client' ? 'Vous' : thread.name }}</span>
+            <time>{{ msg.sentAt | date:'dd MMM HH:mm' }}</time>
+          </div>
+          <p>{{ msg.content }}</p>
+        </div>
+      </div>
+
+      <form class="composer" [formGroup]="form" (ngSubmit)="send()">
+        <mat-form-field appearance="outline" class="composer__field">
+          <mat-label>Objet (optionnel)</mat-label>
+          <input matInput formControlName="subject" placeholder="Brief, suivi, feedback...">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="composer__field">
+          <mat-label>Message</mat-label>
+          <textarea matInput rows="3" formControlName="message" placeholder="Partagez votre brief ou feedback"></textarea>
+          <mat-error *ngIf="form.controls.message.hasError('required')">Message requis</mat-error>
+          <mat-error *ngIf="form.controls.message.hasError('minlength')">3 caractères minimum</mat-error>
+        </mat-form-field>
+        <div class="composer__actions">
+          <span class="spacer"></span>
+          <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || sending()">
+            <mat-icon>send</mat-icon>
+            Envoyer
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel conversation empty" *ngIf="!selectedThread() && !loading() && !error()">
+      <mat-icon>forum</mat-icon>
+      <p>Sélectionnez une conversation.</p>
+    </section>
+  </div>
+</section>

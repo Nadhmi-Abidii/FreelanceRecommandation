@@ -1,0 +1,243 @@
+/* ===== NAVBAR (same style as create-mission) ===== */
+$page-padding: clamp(1.5rem, 2vw, 3rem);
+$primary-blue: #2563eb;
+$text-dark: #0f172a;
+$text-muted: #475569;
+
+:host {
+  display: block;
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 50%, #eef2ff 100%);
+  min-height: 100vh;
+  color: $text-dark;
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem $page-padding;
+  background-color: rgba(255, 255, 255, 0.9);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(6px);
+}
+
+.logo {
+  font-size: 1.625rem;
+  font-weight: 700;
+  color: $primary-blue;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  text-decoration: none;
+
+  span { color: $text-dark; }
+}
+
+.main-nav {
+  display: flex;
+  gap: 1.5rem;
+  font-weight: 500;
+
+  a {
+    color: $text-muted;
+    text-decoration: none;
+    position: relative;
+    padding-bottom: 0.25rem;
+    transition: color 0.2s ease;
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0; bottom: 0;
+      width: 100%; height: 3px;
+      border-radius: 999px;
+      background: transparent;
+      transition: background 0.2s ease;
+    }
+
+    &.active, &:hover {
+      color: $text-dark;
+      &::after { background: $primary-blue; }
+    }
+
+    &.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  }
+}
+
+.cta { display: flex; gap: 0.75rem; }
+
+/* ===== LIST PAGE (unchanged) ===== */
+.missions {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 16px 30px rgba(40, 49, 73, 0.12);
+  padding: 2rem;
+  max-width: 1100px;
+  margin: 2rem auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.missions__header { display: flex; flex-direction: column; gap: 1rem; }
+.missions__header h1 { margin: 0; font-size: 1.75rem; font-weight: 700; text-align: center; }
+.missions__filters { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; }
+
+.missions__filter {
+  border: none; border-radius: 999px;
+  background: #f0f2f9; color: #5e6480;
+  padding: 0.5rem 1.5rem; font-size: 0.95rem; font-weight: 500;
+  cursor: pointer; transition: .2s;
+}
+.missions__filter:hover { background: #e3e7f5; color: #1c1f36; }
+.missions__filter--active {
+  background: linear-gradient(135deg, #5668f2, #7c5cff);
+  color: #fff; box-shadow: 0 6px 18px rgba(86,104,242,.35);
+}
+
+.missions__table-wrapper { overflow-x: auto; }
+.missions__table { width: 100%; border-collapse: collapse; min-width: 600px; }
+.missions__table th, .missions__table td { text-align: left; padding: .9rem 1rem; border-bottom: 1px solid #eef1f8; }
+.missions__table thead th {
+  font-size: .85rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+  color: #8a90a6; background: #f7f8fc;
+}
+.missions__table tbody tr:hover { background: #f6f8ff; }
+.missions__title { font-weight: 600; color: #1c1f36; }
+
+.badge { display: inline-flex; align-items: center; justify-content: center;
+  padding: .3rem .8rem; border-radius: 999px; font-size: .85rem; font-weight: 600; }
+.badge-success  { background: rgba(65,190,120,.16);  color: #24a55b; }
+.badge-info     { background: rgba(71,135,255,.16);  color: #3863ff; }
+.badge-warning  { background: rgba(246,188,66,.16);  color: #e59d24; }
+.badge-secondary{ background: rgba(130,137,161,.16); color: #6d7288; }
+.badge-danger   { background: rgba(255,87,87,.16);   color: #d63a3a; }
+
+.missions__actions { display: flex; align-items: center; gap: .5rem; }
+.link-button { border: none; background: none; color: #5668f2; font-size: .9rem; font-weight: 600; cursor: pointer; padding: 0; }
+.link-button:disabled { color: #b5b9ca; cursor: not-allowed; }
+.missions__divider { color: #d0d4e4; }
+
+.missions__footer {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;
+  color: #7a8096; font-size: .9rem;
+}
+.missions__pagination { display: flex; align-items: center; gap: .75rem; }
+.missions__page { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%;
+  background: #5668f2; color: #fff; font-weight: 600; }
+
+.state .err { color: #d63a3a; font-weight: 600; }
+.state .ok  { color: #16a34a; font-weight: 600; }
+
+@media (max-width: 768px) {
+  .missions { padding: 1.5rem; }
+  .missions__table { min-width: 100%; }
+}
+
+/* ===== Buttons (for modals) ===== */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  padding: .6rem 1rem; border-radius: 10px; border: 1px solid transparent;
+  font-weight: 600; font-size: .95rem; cursor: pointer;
+  background: linear-gradient(135deg, #5668f2, #7c5cff); color: #fff;
+  box-shadow: 0 8px 20px rgba(86,104,242,.25);
+  transition: transform .05s ease, filter .2s ease, box-shadow .2s ease, background .2s ease;
+  &:hover { filter: brightness(1.03); }
+  &:active { transform: translateY(1px); }
+}
+.btn.ghost {
+  background: #ffffff; color: #5668f2; border-color: #cfd6ff;
+  box-shadow: 0 4px 12px rgba(86,104,242,.12);
+}
+.btn.danger { background: #ef4444; color: #fff; box-shadow: 0 8px 20px rgba(239,68,68,.25); }
+
+/* ===== Modal ===== */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(15, 23, 42, .45);
+  backdrop-filter: blur(2px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 50; animation: fadeIn .12s ease-out;
+}
+.modal {
+  width: min(760px, calc(100% - 2rem));
+  background: #fff; border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, .25);
+  overflow: hidden; animation: popIn .14s ease-out;
+
+  &.small { width: min(480px, calc(100% - 2rem)); }
+
+  &__header {
+    padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid #eef1f8;
+    h2 { margin: 0; font-size: 1.125rem; font-weight: 700; color: #0f172a; }
+  }
+
+  &__close {
+    border: 0; background: transparent; color: #6b7280;
+    padding: .35rem; border-radius: 8px; line-height: 0; cursor: pointer;
+    transition: background .2s ease, color .2s ease, transform .05s ease;
+    &:hover { background: #f3f4f6; color: #374151; }
+    &:active { transform: translateY(1px); }
+  }
+
+  &__body { padding: 1.25rem; color: #0f172a; }
+  &__footer {
+    padding: .9rem 1.25rem; display: flex; gap: .6rem; justify-content: flex-end;
+    border-top: 1px solid #eef1f8; background: #fafbff;
+  }
+}
+.modal.danger .modal__header { background: #fff1f2; border-bottom-color: #ffe4e6; h2 { color: #b91c1c; } }
+
+/* ===== Editable form inside modal (applies to inputs & textareas) ===== */
+.readonly-form {
+  display: grid; gap: 1rem;
+
+  .row { display: grid; gap: .35rem; }
+
+  .row.two {
+    grid-template-columns: 1fr 1fr; gap: 1rem;
+    @media (max-width: 640px) { grid-template-columns: 1fr; }
+  }
+
+  label { font-size: .9rem; color: #334155; font-weight: 700; }
+
+  /* ★ IMPORTANT: style both editable and readonly */
+  input, textarea, select {
+    width: 100%;
+    padding: .7rem .85rem;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    color: #0f172a;
+    font: inherit;
+    outline: none;
+    transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+  }
+
+  input::placeholder, textarea::placeholder { color: #9aa3b2; }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: #93c5fd;
+    box-shadow: 0 0 0 4px rgba(147, 197, 253, .35);
+    background: #ffffff;
+  }
+
+  /* checkbox alignment */
+  input[type="checkbox"] {
+    width: auto; height: auto; padding: 0;
+    box-shadow: none; border-radius: .375rem;
+  }
+}
+
+/* Muted helper text */
+.muted { color: #6b7280; font-size: .95rem; }
+
+/* Animations */
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes popIn  { from { opacity: 0; transform: translateY(6px) scale(.995) } to { opacity: 1; transform: translateY(0) scale(1) } }

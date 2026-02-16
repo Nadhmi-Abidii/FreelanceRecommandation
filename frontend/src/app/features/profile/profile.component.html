@@ -1,0 +1,572 @@
+<mat-toolbar class="topbar" role="navigation" aria-label="Navigation principale">
+  <div class="brand" routerLink="/dashboard" aria-label="ToWork home">
+    <svg class="logo-svg" width="34" height="34" viewBox="0 0 48 48" role="img" aria-label="ToWork logo">
+      <defs>
+        <linearGradient id="twg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#2563eb" />
+          <stop offset="100%" stop-color="#7c3aed" />
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#twg)" />
+      <path d="M14 18h20a2 2 0 0 0 0-4H14a2 2 0 0 0 0 4zm8 2v14a2 2 0 0 0 4 0V20z" fill="white" />
+    </svg>
+    <span class="brand-name">ToWork</span>
+  </div>
+
+  <nav class="nav">
+    <a mat-button routerLink="/dashboard" routerLinkActive="active">Tableau de bord</a>
+    <a mat-button routerLink="/missions/new" routerLinkActive="active">Creer une mission</a>
+    <a mat-button routerLink="/missions" routerLinkActive="active">Mes missions</a>
+    <a mat-button routerLink="/candidatures" routerLinkActive="active">Candidatures</a>
+    <a mat-button routerLink="/messages" routerLinkActive="active">Discussions</a>
+    <a mat-button routerLink="/client/wallet" routerLinkActive="active">Wallet</a>
+  </nav>
+
+  <span class="spacer"></span>
+
+  <mat-slide-toggle class="dark-toggle" (change)="toggleDark($event.checked)">Dark</mat-slide-toggle>
+
+  <button mat-icon-button matBadge="3" matBadgeColor="accent" aria-label="Notifications">
+    <mat-icon>notifications</mat-icon>
+  </button>
+
+  <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Profil">
+    <mat-icon>account_circle</mat-icon>
+  </button>
+
+  <mat-menu #userMenu="matMenu">
+    <button mat-menu-item routerLink="/profile"><mat-icon>person</mat-icon><span>Profil</span></button>
+    <button mat-menu-item routerLink="/settings"><mat-icon>settings</mat-icon><span>Parametres</span></button>
+    <mat-divider></mat-divider>
+    <button mat-menu-item (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      <span>Deconnexion</span>
+    </button>
+  </mat-menu>
+</mat-toolbar>
+
+<div class="profile-page">
+  <mat-progress-bar *ngIf="loading()" mode="indeterminate" class="page-loader"></mat-progress-bar>
+
+  <mat-card *ngIf="loadError()" class="error-card" appearance="outlined">
+    <div class="error-card__content">
+      <mat-icon color="warn">error</mat-icon>
+      <div>
+        <h3>Erreur de chargement</h3>
+        <p>{{ loadError() }}</p>
+      </div>
+      <button mat-stroked-button color="primary" type="button" (click)="reload()">Reessayer</button>
+    </div>
+  </mat-card>
+
+  <ng-container *ngIf="!loadError()">
+    <ng-container *ngIf="isClient(); else freelancerView">
+      <section class="hero" aria-labelledby="profil-heading">
+        <div class="hero__text">
+          <p class="eyebrow">Espace personnel</p>
+          <h1 id="profil-heading">Profil &amp; securite</h1>
+          <p>Consultez vos coordonnees, mettez-les a jour et gardez le controle sur la securite de votre compte.</p>
+          <div class="meta">
+            <span class="badge" [class.badge--verified]="user().status === 'verified'">
+              <mat-icon aria-hidden="true">verified</mat-icon>
+              <span>{{ user().status === 'verified' ? 'Compte verifie' : 'Verification en cours' }}</span>
+            </span>
+            <span class="updated">
+              <mat-icon aria-hidden="true">update</mat-icon>
+              Derniere mise a jour : {{ clientLastUpdated() }}
+            </span>
+          </div>
+        </div>
+
+        <mat-card class="summary" appearance="outlined">
+          <div class="summary__avatar" aria-hidden="true">{{ initials() }}</div>
+          <div class="summary__identity">
+            <h2>{{ user().fullName }}</h2>
+            <p class="summary__role">{{ user().role }}</p>
+          </div>
+
+          <mat-divider></mat-divider>
+
+          <div class="summary__progress" aria-label="Completion du profil">
+            <div class="progress__header">
+              <span>Profil complet a {{ profileCompletion() }}%</span>
+              <span class="hint">Ajoutez des informations pour gagner en credibilite</span>
+            </div>
+            <mat-progress-bar mode="determinate" [value]="profileCompletion()"></mat-progress-bar>
+          </div>
+
+          <dl class="summary__details">
+            <div>
+              <dt>Email</dt>
+              <dd>{{ user().email }}</dd>
+            </div>
+            <div>
+              <dt>Telephone</dt>
+              <dd>{{ user().phone }}</dd>
+            </div>
+            <div>
+              <dt>Entreprise</dt>
+              <dd>{{ user().companyName }}</dd>
+            </div>
+            <div>
+              <dt>Localisation</dt>
+              <dd>{{ user().city }}<ng-container *ngIf="user().country">, {{ user().country }}</ng-container></dd>
+            </div>
+          </dl>
+
+          <mat-divider></mat-divider>
+          <div class="summary__feedback" *ngIf="feedbackSummary()">
+            <mat-icon color="accent">star</mat-icon>
+            <div>
+              <div class="score">{{ feedbackSummary()?.averageRating | number:'1.1-2' }}/5</div>
+              <div class="muted">{{ feedbackSummary()?.count }} avis</div>
+            </div>
+          </div>
+          <p class="summary__bio">{{ user().bio }}</p>
+
+          <button mat-stroked-button color="primary" type="button">Exporter mes donnees</button>
+        </mat-card>
+      </section>
+
+      <section class="forms" aria-label="Formulaires de mise a jour du profil">
+        <mat-card class="form-card" appearance="outlined">
+          <header class="form-card__header">
+            <div>
+              <h2>Coordonnees</h2>
+              <p>Mettez a jour vos informations professionnelles et de contact.</p>
+            </div>
+            <mat-chip-set class="form-card__tags">
+              <mat-chip color="primary" selected>Visibilite publique</mat-chip>
+              <mat-chip>Contact</mat-chip>
+            </mat-chip-set>
+          </header>
+
+          <form [formGroup]="profileForm" (ngSubmit)="submitProfile()" novalidate>
+            <div class="grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Prenom</mat-label>
+                <input matInput formControlName="firstName" placeholder="Votre prenom" />
+                <mat-icon matSuffix aria-hidden="true">person</mat-icon>
+                <mat-error *ngIf="hasError(profileForm.controls.firstName, 'required')">Champ requis.</mat-error>
+                <mat-error *ngIf="hasError(profileForm.controls.firstName, 'minlength')">2 caracteres min.</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Nom</mat-label>
+                <input matInput formControlName="lastName" placeholder="Votre nom" />
+                <mat-icon matSuffix aria-hidden="true">badge</mat-icon>
+                <mat-error *ngIf="hasError(profileForm.controls.lastName, 'required')">Champ requis.</mat-error>
+                <mat-error *ngIf="hasError(profileForm.controls.lastName, 'minlength')">2 caracteres min.</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Adresse email</mat-label>
+                <input matInput formControlName="email" type="email" placeholder="nom@exemple.com" />
+                <mat-icon matSuffix aria-hidden="true">mail</mat-icon>
+                <mat-error *ngIf="hasError(profileForm.controls.email, 'required')">L'email est requis.</mat-error>
+                <mat-error *ngIf="hasError(profileForm.controls.email, 'email')">Format d'email invalide.</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Telephone</mat-label>
+                <input matInput formControlName="phone" placeholder="+33 6 00 00 00 00" />
+                <mat-icon matSuffix aria-hidden="true">call</mat-icon>
+                <mat-error *ngIf="hasError(profileForm.controls.phone, 'pattern')">Numero invalide.</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Entreprise</mat-label>
+                <input matInput formControlName="companyName" placeholder="Nom de votre entreprise" />
+                <mat-icon matSuffix aria-hidden="true">business</mat-icon>
+                <mat-error *ngIf="hasError(profileForm.controls.companyName, 'minlength')">2 caracteres min.</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Ville</mat-label>
+                <input matInput formControlName="city" placeholder="Ville" />
+                <mat-icon matSuffix aria-hidden="true">location_city</mat-icon>
+                <mat-error *ngIf="hasError(profileForm.controls.city, 'minlength')">2 caracteres min.</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Pays</mat-label>
+                <input matInput formControlName="country" placeholder="Pays" />
+                <mat-icon matSuffix aria-hidden="true">public</mat-icon>
+                <mat-error *ngIf="hasError(profileForm.controls.country, 'minlength')">2 caracteres min.</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="bio-field">
+                <mat-label>Biographie</mat-label>
+                <textarea matInput formControlName="bio" rows="4" placeholder="Decrivez votre role et votre expertise"></textarea>
+                <mat-error *ngIf="hasError(profileForm.controls.bio, 'minlength')">10 caracteres minimum.</mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="form-card__footer">
+              <div class="feedback" *ngIf="feedback() as message" [class.feedback--visible]="message.type === 'profile'">
+                <mat-icon aria-hidden="true">check_circle</mat-icon>
+                <span>{{ message.message }}</span>
+              </div>
+              <button mat-flat-button color="primary" type="submit">Enregistrer les modifications</button>
+            </div>
+          </form>
+        </mat-card>
+
+        <mat-card class="form-card" appearance="outlined">
+          <header class="form-card__header">
+            <div>
+              <h2>Mot de passe</h2>
+              <p>Securisez votre compte avec un mot de passe robuste.</p>
+            </div>
+            <mat-chip-set class="form-card__tags">
+              <mat-chip>Requis: 10 caracteres</mat-chip>
+              <mat-chip>1 caractere special</mat-chip>
+            </mat-chip-set>
+          </header>
+
+          <form [formGroup]="passwordForm" (ngSubmit)="submitPassword()" novalidate>
+            <div class="grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Mot de passe actuel</mat-label>
+                <input matInput type="password" formControlName="currentPassword" autocomplete="current-password" />
+                <mat-icon matSuffix aria-hidden="true">lock</mat-icon>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Nouveau mot de passe</mat-label>
+                <input matInput type="password" formControlName="newPassword" autocomplete="new-password" />
+                <mat-icon matSuffix aria-hidden="true">lock_reset</mat-icon>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Confirmer le mot de passe</mat-label>
+                <input matInput type="password" formControlName="confirmPassword" autocomplete="new-password" />
+                <mat-icon matSuffix aria-hidden="true">verified_user</mat-icon>
+                <mat-error *ngIf="passwordMismatch()">Les mots de passe ne correspondent pas.</mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="form-card__footer">
+              <div class="feedback" *ngIf="feedback() as message" [class.feedback--visible]="message.type === 'password'">
+                <mat-icon aria-hidden="true">check_circle</mat-icon>
+                <span>{{ message.message }}</span>
+              </div>
+              <button mat-flat-button color="primary" type="submit">Mettre a jour le mot de passe</button>
+            </div>
+          </form>
+        </mat-card>
+      </section>
+    </ng-container>
+  </ng-container>
+</div>
+
+<ng-template #freelancerView>
+  <section class="hero" aria-labelledby="freelancer-heading">
+    <div class="hero__text">
+      <p class="eyebrow">Espace freelance</p>
+      <h1 id="freelancer-heading">Profil freelance</h1>
+      <p>Partagez vos informations cle pour etre contacte par les clients.</p>
+      <div class="meta">
+        <span class="badge" [class.badge--verified]="freelancer().status === 'verified'">
+          <mat-icon aria-hidden="true">workspace_premium</mat-icon>
+          <span>{{ freelancer().status === 'verified' ? 'Compte verifie' : 'Verification en cours' }}</span>
+        </span>
+        <span class="updated">
+          <mat-icon aria-hidden="true">update</mat-icon>
+          Derniere mise a jour : {{ freelancerLastUpdated() }}
+        </span>
+      </div>
+      <div class="alert-banner" *ngIf="freelancerMissingFields().length">
+        <mat-icon color="warn">warning</mat-icon>
+        <div>
+          <strong>Profil incomplet</strong>
+          <p>Champs a completer : {{ freelancerMissingFields().join(', ') }}</p>
+        </div>
+      </div>
+    </div>
+
+    <mat-card class="summary" appearance="outlined">
+      <div class="summary__avatar" aria-hidden="true">{{ freelancerInitials() }}</div>
+      <div class="summary__identity">
+        <h2>{{ freelancer().fullName }}</h2>
+        <p class="summary__role">{{ freelancer().role }}</p>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <div class="summary__progress" aria-label="Completion du profil">
+        <div class="progress__header">
+          <span>Profil complet a {{ freelancerCompletion() }}%</span>
+          <span class="hint">Ajoutez vos informations pour gagner en visibilite</span>
+        </div>
+        <mat-progress-bar mode="determinate" [value]="freelancerCompletion()"></mat-progress-bar>
+      </div>
+
+      <dl class="summary__details">
+        <div>
+          <dt>Email</dt>
+          <dd>{{ freelancer().email }}</dd>
+        </div>
+        <div>
+          <dt>Telephone</dt>
+          <dd>{{ freelancer().phone || 'A renseigner' }}</dd>
+        </div>
+        <div>
+          <dt>Localisation</dt>
+          <dd>{{ freelancerLocation() }}</dd>
+        </div>
+        <div>
+          <dt>Tarif</dt>
+          <dd>
+            {{ freelancer().hourlyRate != null ? (freelancer().hourlyRate + ' EUR / h') :
+                freelancer().dailyRate != null ? (freelancer().dailyRate + ' EUR / j') : 'A renseigner' }}
+          </dd>
+        </div>
+      </dl>
+
+      <mat-divider></mat-divider>
+      <div class="summary__feedback" *ngIf="feedbackSummary()">
+        <mat-icon color="accent">star</mat-icon>
+        <div>
+          <div class="score">{{ feedbackSummary()?.averageRating | number:'1.1-2' }}/5</div>
+          <div class="muted">{{ feedbackSummary()?.count }} avis</div>
+        </div>
+      </div>
+      <div class="feedback-list" *ngIf="freelancerFeedbacks().length">
+        <h4>Derniers avis clients</h4>
+        <div class="feedback-card" *ngFor="let fb of freelancerFeedbacks()">
+          <div class="rating">
+            <mat-icon *ngFor="let star of [1,2,3,4,5]" [color]="fb.rating >= star ? 'warn' : undefined">star</mat-icon>
+            <span class="score">{{ fb.rating }}/5</span>
+          </div>
+          <p class="muted">{{ fb.comment || 'Pas de commentaire fourni' }}</p>
+          <small class="muted">Mission #{{ fb.missionId }}</small>
+        </div>
+      </div>
+      <p class="summary__bio muted" *ngIf="!freelancerFeedbacks().length">Aucun avis client pour le moment.</p>
+      <mat-chip-set *ngIf="freelancer().skills.length; else noSkill">
+        <mat-chip color="primary" selected *ngFor="let skill of freelancer().skills">{{ skill }}</mat-chip>
+      </mat-chip-set>
+      <ng-template #noSkill>
+        <p class="summary__bio muted">Ajoutez vos competences pour apparaitre dans les recherches.</p>
+      </ng-template>
+      <p class="summary__bio">{{ freelancer().bio || 'Ajoutez une courte presentation.' }}</p>
+    </mat-card>
+  </section>
+
+  <section class="info-grid" aria-label="Details freelance">
+    <mat-card class="info-card" appearance="outlined">
+      <header>
+        <mat-icon aria-hidden="true">call</mat-icon>
+        <div>
+          <h3>Contact</h3>
+          <p>Coordonnees visibles par les clients selectionnes.</p>
+        </div>
+      </header>
+      <div class="info-row">
+        <span class="label">Telephone</span>
+        <span>{{ freelancer().phone || 'A renseigner' }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Email</span>
+        <span>{{ freelancer().email }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Liens</span>
+        <span>
+          <ng-container *ngIf="freelancer().linkedinUrl; else linkMissing">LinkedIn renseigne</ng-container>
+          <ng-template #linkMissing>Ajoutez vos liens</ng-template>
+        </span>
+      </div>
+    </mat-card>
+
+    <mat-card class="info-card" appearance="outlined">
+      <header>
+        <mat-icon aria-hidden="true">work</mat-icon>
+        <div>
+          <h3>Profil pro</h3>
+          <p>Titre, bio et competences visibles dans votre portfolio.</p>
+        </div>
+      </header>
+      <div class="info-row">
+        <span class="label">Titre</span>
+        <span>{{ freelancer().title || 'A renseigner' }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Disponibilite</span>
+        <span>{{ freelancer().availability || 'Flexible' }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Competences</span>
+        <span>{{ freelancer().skills.length ? freelancer().skills.join(', ') : 'A renseigner' }}</span>
+      </div>
+    </mat-card>
+
+    <mat-card class="info-card" appearance="outlined">
+      <header>
+        <mat-icon aria-hidden="true">payments</mat-icon>
+        <div>
+          <h3>Tarifs</h3>
+          <p>Indiquez un taux horaire ou journalier.</p>
+        </div>
+      </header>
+      <div class="info-row">
+        <span class="label">Tarif horaire</span>
+        <span>{{ freelancer().hourlyRate != null ? (freelancer().hourlyRate + ' EUR / h') : 'A renseigner' }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Tarif journalier</span>
+        <span>{{ freelancer().dailyRate != null ? (freelancer().dailyRate + ' EUR / j') : 'A renseigner' }}</span>
+      </div>
+    </mat-card>
+  </section>
+
+  <section class="forms" aria-label="Mise a jour du profil freelance">
+    <mat-card class="form-card" appearance="outlined">
+      <header class="form-card__header">
+        <div>
+          <h2>Mettre a jour mon profil</h2>
+          <p>Ces informations sont visibles par les clients.</p>
+        </div>
+        <mat-chip-set class="form-card__tags">
+          <mat-chip color="primary" selected>Profil public</mat-chip>
+          <mat-chip *ngIf="freelancerMissingFields().length">A completer</mat-chip>
+        </mat-chip-set>
+      </header>
+
+      <form [formGroup]="freelancerForm" (ngSubmit)="submitFreelancerProfile()" novalidate>
+        <div class="grid">
+          <mat-form-field appearance="outline">
+            <mat-label>Prenom</mat-label>
+            <input matInput formControlName="firstName" placeholder="Votre prenom" />
+            <mat-icon matSuffix aria-hidden="true">person</mat-icon>
+            <mat-error *ngIf="hasError(freelancerForm.controls.firstName, 'required')">Champ requis.</mat-error>
+            <mat-error *ngIf="hasError(freelancerForm.controls.firstName, 'minlength')">2 caracteres min.</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Nom</mat-label>
+            <input matInput formControlName="lastName" placeholder="Votre nom" />
+            <mat-icon matSuffix aria-hidden="true">badge</mat-icon>
+            <mat-error *ngIf="hasError(freelancerForm.controls.lastName, 'required')">Champ requis.</mat-error>
+            <mat-error *ngIf="hasError(freelancerForm.controls.lastName, 'minlength')">2 caracteres min.</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="email" type="email" placeholder="nom@exemple.com" />
+            <mat-icon matSuffix aria-hidden="true">mail</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Telephone</mat-label>
+            <input matInput formControlName="phone" placeholder="+33 6 00 00 00 00" />
+            <mat-icon matSuffix aria-hidden="true">call</mat-icon>
+            <mat-error *ngIf="hasError(freelancerForm.controls.phone, 'required')">Champ requis.</mat-error>
+            <mat-error *ngIf="hasError(freelancerForm.controls.phone, 'pattern')">Numero invalide.</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Titre</mat-label>
+            <input matInput formControlName="title" placeholder="Ex: Developpeur Angular" />
+            <mat-icon matSuffix aria-hidden="true">workspace_premium</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Ville</mat-label>
+            <input matInput formControlName="city" placeholder="Ville" />
+            <mat-icon matSuffix aria-hidden="true">location_city</mat-icon>
+            <mat-error *ngIf="hasError(freelancerForm.controls.city, 'minlength')">2 caracteres min.</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Pays</mat-label>
+            <input matInput formControlName="country" placeholder="Pays" />
+            <mat-icon matSuffix aria-hidden="true">public</mat-icon>
+            <mat-error *ngIf="hasError(freelancerForm.controls.country, 'minlength')">2 caracteres min.</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Tarif horaire (EUR)</mat-label>
+            <input matInput type="number" formControlName="hourlyRate" min="0" />
+            <mat-icon matSuffix aria-hidden="true">schedule</mat-icon>
+            <mat-error *ngIf="hasError(freelancerForm.controls.hourlyRate, 'min')">Indiquez un montant positif.</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Tarif journalier (EUR)</mat-label>
+            <input matInput type="number" formControlName="dailyRate" min="0" />
+            <mat-icon matSuffix aria-hidden="true">euro</mat-icon>
+            <mat-error *ngIf="hasError(freelancerForm.controls.dailyRate, 'min')">Indiquez un montant positif.</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Disponibilite</mat-label>
+            <input matInput formControlName="availability" placeholder="Temps plein, mission courte..." />
+            <mat-icon matSuffix aria-hidden="true">event_available</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Competences (separees par une virgule)</mat-label>
+            <input matInput formControlName="skills" placeholder="Angular, Spring, UX" />
+            <mat-icon matSuffix aria-hidden="true">sell</mat-icon>
+          </mat-form-field>
+          <div class="resume-upload">
+            <label class="resume-upload__label">Importer un CV (PDF) pour extraire des competences</label>
+            <input type="file" accept="application/pdf" (change)="onResumeSelected($event)">
+            <div class="resume-upload__actions">
+              <button mat-stroked-button color="primary" type="button" (click)="extractResume()" [disabled]="resumeLoading() || !resumeFile()">
+                <mat-icon>auto_awesome</mat-icon>
+                {{ resumeLoading() ? 'Analyse...' : 'Extraire' }}
+              </button>
+              <span class="resume-upload__file" *ngIf="resumeFile()">{{ resumeFile()?.name }}</span>
+            </div>
+            <p class="resume-upload__error" *ngIf="resumeError()">{{ resumeError() }}</p>
+            <div class="resume-upload__summary" *ngIf="resumeResult()?.summary">
+              <p>{{ resumeResult()?.summary }}</p>
+              <p *ngIf="resumeResult()?.createdCount != null">
+                Competences ajoutees: {{ resumeResult()?.createdCount }}
+              </p>
+            </div>
+          </div>
+
+          <mat-form-field appearance="outline" class="bio-field">
+            <mat-label>Biographie</mat-label>
+            <textarea matInput formControlName="bio" rows="4" placeholder="Decrivez votre expertise et vos resultats."></textarea>
+            <mat-error *ngIf="hasError(freelancerForm.controls.bio, 'minlength')">10 caracteres minimum.</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Portfolio</mat-label>
+            <input matInput formControlName="portfolioUrl" placeholder="https://monportfolio.com" />
+            <mat-icon matSuffix aria-hidden="true">link</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>LinkedIn</mat-label>
+            <input matInput formControlName="linkedinUrl" placeholder="https://linkedin.com/in/..." />
+            <mat-icon matSuffix aria-hidden="true">link</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>GitHub</mat-label>
+            <input matInput formControlName="githubUrl" placeholder="https://github.com/..." />
+            <mat-icon matSuffix aria-hidden="true">code</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <div class="form-card__footer">
+          <div class="feedback" *ngIf="freelancerMissingFields().length">
+            <mat-icon aria-hidden="true">info</mat-icon>
+            <span>Champs a completer : {{ freelancerMissingFields().join(', ') }}</span>
+          </div>
+          <button mat-flat-button color="primary" type="submit" [disabled]="savingFreelancer()">
+            <mat-icon *ngIf="savingFreelancer()" aria-hidden="true">hourglass_top</mat-icon>
+            <span>{{ savingFreelancer() ? 'Enregistrement...' : 'Enregistrer' }}</span>
+          </button>
+        </div>
+      </form>
+    </mat-card>
+  </section>
+</ng-template>
+

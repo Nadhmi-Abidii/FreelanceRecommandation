@@ -1,0 +1,308 @@
+<mat-toolbar class="topbar" role="navigation" aria-label="Navigation freelance">
+  <div
+    class="brand"
+    routerLink="/freelancer"
+    routerLinkActive="active"
+    aria-label="ToWork dashboard"
+  >
+    <svg
+      class="logo-svg"
+      width="34"
+      height="34"
+      viewBox="0 0 48 48"
+      role="img"
+      aria-label="ToWork logo"
+    >
+      <defs>
+        <linearGradient id="twg-admin" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#2563eb" />
+          <stop offset="100%" stop-color="#7c3aed" />
+        </linearGradient>
+      </defs>
+      <rect
+        x="2"
+        y="2"
+        width="44"
+        height="44"
+        rx="12"
+        fill="url(#twg-admin)"
+      />
+      <path
+        d="M14 18h20a2 2 0 0 0 0-4H14a2 2 0 0 0 0 4zm8 2v14a2 2 0 0 0 4 0V20z"
+        fill="white"
+      />
+    </svg>
+    <span class="brand-name">ToWork</span>
+  </div>
+
+  <nav class="nav" aria-label="Liens freelance">
+    <a mat-button routerLink="/freelancer" routerLinkActive="active">
+      Tableau de bord
+    </a>
+    <a
+      mat-button
+      routerLink="/freelancer/candidatures"
+      routerLinkActive="active"
+    >
+      Candidatures
+    </a>
+    <a
+      mat-button
+      routerLink="/freelancer/missions"
+      routerLinkActive="active"
+    >
+      Mes missions
+    </a>
+    <a
+      mat-button
+      routerLink="/freelancer/portfolio"
+      routerLinkActive="active"
+    >
+      Portfolio
+    </a>
+  </nav>
+
+  <span class="spacer"></span>
+
+  <mat-slide-toggle class="dark-toggle" (change)="toggleDark($event.checked)">
+    Dark
+  </mat-slide-toggle>
+
+  <button
+    mat-icon-button
+    matBadge="5"
+    matBadgeColor="accent"
+    aria-label="Notifications"
+  >
+    <mat-icon>notifications</mat-icon>
+  </button>
+
+  <button
+    mat-icon-button
+    [matMenuTriggerFor]="userMenu"
+    aria-label="Profil freelance"
+  >
+    <mat-icon>shield_person</mat-icon>
+  </button>
+
+  <mat-menu #userMenu="matMenu">
+    <button mat-menu-item routerLink="/profile">
+      <mat-icon>person</mat-icon>
+      <span>Profil</span>
+    </button>
+    <button mat-menu-item routerLink="/settings">
+      <mat-icon>settings</mat-icon>
+      <span>Paramètres</span>
+    </button>
+    <mat-divider></mat-divider>
+    <button mat-menu-item (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      <span>Déconnexion</span>
+    </button>
+  </mat-menu>
+</mat-toolbar>
+
+<section class="page page--freelancer-missions">
+  <header class="page__head">
+    <div class="page__head-main">
+      <div>
+        <p class="eyebrow">Tableau de bord freelance</p>
+        <h1>Mes missions en cours</h1>
+        <p class="muted">
+          Retrouvez vos missions acceptées, vos clients et le détail des
+          jalons associés.
+        </p>
+      </div>
+
+      <div class="page__head-stats">
+        <div class="pill pill--ghost">
+          <mat-icon>work_outline</mat-icon>
+          <span>{{ totalMissions() }} mission(s)</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <mat-progress-bar *ngIf="loading()" mode="indeterminate"></mat-progress-bar>
+
+  <div class="alert alert--error" *ngIf="!loading() && error()">
+    <mat-icon>error_outline</mat-icon>
+    <div>
+      <p>{{ error() }}</p>
+      <small>Réessayez plus tard ou rafraîchissez la page.</small>
+    </div>
+  </div>
+
+  <div
+    class="empty-state"
+    *ngIf="!loading() && !error() && !missions().length"
+  >
+    <mat-icon>work_outline</mat-icon>
+    <h2>Aucune mission active</h2>
+    <p class="muted">
+      Dès qu'un client valide votre proposition, la mission apparaîtra ici avec
+      ses jalons.
+    </p>
+  </div>
+
+  <div
+    class="mission-grid"
+    *ngIf="!loading() && !error() && missions().length"
+  >
+    <mat-card
+      class="mission-card"
+      appearance="outlined"
+      *ngFor="let mission of missions()"
+    >
+      <!-- Bandeau haut -->
+      <div class="mission-card__header">
+        <div class="mission-card__title">
+          <p class="eyebrow">Mission #{{ mission.id }}</p>
+          <h2>{{ mission.title }}</h2>
+          <p class="muted mission-card__subtitle">
+            {{ mission.description || 'Pas de description fournie.' }}
+          </p>
+        </div>
+
+        <div class="mission-card__badge">
+          <mat-chip [color]="statusColor(mission.status)" selected>
+            {{ missionStatusLabel(mission.status) }}
+          </mat-chip>
+          <button
+            mat-stroked-button
+            color="primary"
+            class="complete-btn"
+            type="button"
+            *ngIf="isFreelancer && canCompleteMission(mission)"
+            (click)="onCompleteMission(mission)"
+            [disabled]="isCompletingMission(mission.id)"
+          >
+            <mat-icon>check_circle</mat-icon>
+            Terminer la mission
+          </button>
+        </div>
+      </div>
+
+      <!-- Infos mission -->
+      <div class="mission-card__meta">
+        <div class="meta-item">
+          <mat-icon>person_outline</mat-icon>
+          <div>
+            <span class="meta-label">Client</span>
+            <span class="meta-value">{{ mission.clientName || 'Client' }}</span>
+          </div>
+        </div>
+        <div class="meta-item">
+          <mat-icon>euro</mat-icon>
+          <div>
+            <span class="meta-label">Total jalons</span>
+            <span class="meta-value">
+              {{ (mission.totalAmount || 0) | currency:'EUR' }}
+            </span>
+          </div>
+        </div>
+        <div class="meta-item">
+          <mat-icon>event</mat-icon>
+          <div>
+            <span class="meta-label">Créée le</span>
+            <span class="meta-value">
+              {{ mission.createdAt | date:'dd MMM yyyy' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Jalons -->
+      <div class="milestones">
+        <div class="milestones__head">
+          <div>
+            <h3>Jalons</h3>
+            <p class="muted">
+              {{ mission.milestones.length || 0 }} jalon(s) pour cette mission.
+            </p>
+          </div>
+        </div>
+
+        <div class="milestones__table" *ngIf="mission.milestones.length">
+          <div class="milestones__row milestones__row--head">
+            <div>Titre</div>
+            <div>Description</div>
+            <div class="num">Montant</div>
+            <div>Echeance</div>
+            <div>Statut</div>
+            <div>Actions</div>
+          </div>
+
+          <div class="milestones__row" *ngFor="let m of mission.milestones">
+            <div class="title">{{ m.title }}</div>
+            <div class="desc muted">
+              {{ m.description || 'Pas de description.' }}
+            </div>
+            <div class="num">
+              {{ (m.amount || 0) | currency:'EUR' }}
+            </div>
+            <div>
+              {{ m.dueDate ? (m.dueDate | date:'dd MMM yyyy') : '-' }}
+            </div>
+            <div>
+              <mat-chip [color]="statusColor(m.status)" selected>
+                {{ statusLabel(m.status) }}
+              </mat-chip>
+            </div>
+            <div class="actions">
+              <input
+                type="file"
+                #fileInput
+                hidden
+                (change)="onFileSelected($event, m)"
+              />
+              <button
+                mat-stroked-button
+                color="primary"
+                type="button"
+                *ngIf="isFreelancer && canUpload(m)"
+                (click)="triggerFileInput(fileInput)"
+                [disabled]="isProcessing(m.id)"
+              >
+                <mat-icon>cloud_upload</mat-icon>
+                Uploader
+              </button>
+              <button
+                mat-stroked-button
+                color="primary"
+                type="button"
+                *ngIf="isClient && m.status?.toUpperCase() === 'SUBMITTED'"
+                (click)="acceptMilestone(m)"
+                [disabled]="isProcessing(m.id)"
+              >
+                <mat-icon>check</mat-icon>
+                Accepter
+              </button>
+              <button
+                mat-stroked-button
+                color="warn"
+                type="button"
+                *ngIf="isClient && m.status?.toUpperCase() === 'SUBMITTED'"
+                (click)="rejectMilestone(m)"
+                [disabled]="isProcessing(m.id)"
+              >
+                <mat-icon>close</mat-icon>
+                Rejeter
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="milestones__empty" *ngIf="!mission.milestones.length">
+          <mat-icon>playlist_add</mat-icon>
+          <div>
+            <p>Aucun jalon défini pour cette mission.</p>
+            <p class="muted">
+              Le client pourra ajouter des jalons au fur et à mesure de
+              l'avancement.
+            </p>
+          </div>
+        </div>
+      </div>
+    </mat-card>
+  </div>
+</section>

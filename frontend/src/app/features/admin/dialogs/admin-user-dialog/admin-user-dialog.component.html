@@ -1,0 +1,97 @@
+<h2 mat-dialog-title class="tw-dialog__title">
+  <mat-icon>person_add</mat-icon>
+  Ajouter un utilisateur
+</h2>
+
+<div mat-dialog-content class="tw-dialog__content">
+  <p class="tw-dialog__subtitle">
+    Choisissez le rôle approprié et renseignez les informations principales du compte.
+  </p>
+
+  <form
+    [formGroup]="form"
+    class="dialog-form"
+    (ngSubmit)="submit()
+"
+    aria-label="Formulaire création utilisateur"
+  >
+    <div class="grid-2">
+      <mat-form-field appearance="outline">
+        <mat-label>Prénom</mat-label>
+        <input matInput formControlName="firstName" placeholder="Jean" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Nom</mat-label>
+        <input matInput formControlName="lastName" placeholder="Dupont" />
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Email</mat-label>
+      <input
+        matInput
+        type="email"
+        formControlName="email"
+        placeholder="jean.dupont@email.com"
+        required
+      />
+      <mat-error *ngIf="form.get('email')?.hasError('required')">
+        L'email est requis.
+      </mat-error>
+      <mat-error *ngIf="form.get('email')?.hasError('email')">
+        Format d'email invalide.
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Mot de passe</mat-label>
+      <input
+        matInput
+        type="password"
+        formControlName="password"
+        placeholder="••••••••"
+        required
+      />
+      <mat-error *ngIf="form.get('password')?.hasError('required')">
+        Le mot de passe est requis.
+      </mat-error>
+      <mat-error *ngIf="form.get('password')?.hasError('minlength')">
+        Minimum 6 caractères.
+      </mat-error>
+    </mat-form-field>
+
+    <div class="grid-2">
+      <mat-form-field appearance="outline">
+        <mat-label>Rôle</mat-label>
+        <mat-select formControlName="role" required>
+          <mat-option value="ROLE_CLIENT">Client</mat-option>
+          <mat-option value="ROLE_FREELANCER">Freelance</mat-option>
+          <mat-option value="ROLE_ADMIN">Administrateur</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Statut</mat-label>
+        <mat-select formControlName="status" required>
+          <mat-option value="Actif">Actif</mat-option>
+          <mat-option value="Inactif">Inactif</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </form>
+</div>
+
+<div mat-dialog-actions align="end" class="tw-dialog__actions">
+  <button mat-stroked-button type="button" (click)="close()">
+    Annuler
+  </button>
+  <button mat-flat-button color="primary" type="submit" (click)="submit()">
+    <mat-progress-spinner
+      *ngIf="loading"
+      mode="indeterminate"
+      diameter="18"
+    ></mat-progress-spinner>
+    <span *ngIf="!loading">Créer</span>
+  </button>
+</div>

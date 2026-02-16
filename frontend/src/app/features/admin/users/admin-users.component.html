@@ -1,0 +1,192 @@
+<mat-toolbar class="topbar" role="navigation" aria-label="Navigation administrateur">
+  <div class="brand" routerLink="/admin" aria-label="Tableau de bord admin">
+    <svg class="logo-svg" width="34" height="34" viewBox="0 0 48 48" role="img" aria-label="ToWork logo">
+      <defs>
+        <linearGradient id="twg-admin-users" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#2563eb" />
+          <stop offset="100%" stop-color="#7c3aed" />
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#twg-admin-users)" />
+      <path
+        d="M14 18h20a2 2 0 0 0 0-4H14a2 2 0 0 0 0 4zm8 2v14a2 2 0 0 0 4 0V20z"
+        fill="white"
+      />
+    </svg>
+    <span class="brand-name">ToWork</span>
+  </div>
+
+  <nav class="nav" aria-label="Liens administrateur">
+    <a mat-button routerLink="/admin" routerLinkActive="active">Tableau de bord</a>
+    <a mat-button routerLink="/admin/users" routerLinkActive="active">Utilisateurs</a>
+    <a mat-button routerLink="/admin/domaines" routerLinkActive="active">Domaines</a>
+    <a mat-button routerLink="/missions" routerLinkActive="active">Missions</a>
+    <a mat-button routerLink="/support" routerLinkActive="active">Support</a>
+  </nav>
+
+  <span class="spacer"></span>
+
+  <mat-slide-toggle class="dark-toggle" (change)="toggleDark($event.checked)">
+    Dark
+  </mat-slide-toggle>
+
+  <button mat-icon-button matTooltip="Notifications" aria-label="Notifications">
+    <mat-icon>notifications</mat-icon>
+  </button>
+
+  <button mat-icon-button aria-label="Profil administrateur">
+    <mat-icon>shield_person</mat-icon>
+  </button>
+</mat-toolbar>
+
+<!-- HERO -->
+<section class="hero admin-hero">
+  <div class="hero__content">
+    <p class="eyebrow">Gestion des utilisateurs</p>
+    <h1>Bonjour, {{ adminName() }} <span class="wave">👋</span></h1>
+    <p class="subtitle">
+      Créez, visualisez et suivez l’activité des comptes clients et freelances.
+    </p>
+  </div>
+  <button
+    mat-raised-button
+    color="primary"
+    class="hero__cta"
+    (click)="openCreateDialog()"
+    [disabled]="creating()"
+  >
+    <mat-icon>person_add</mat-icon>
+    Ajouter un utilisateur
+  </button>
+</section>
+
+<!-- ALERT -->
+<mat-card class="panel" *ngIf="error()">
+  <header class="panel__header">
+    <div>
+      <h2>Une erreur est survenue</h2>
+      <p>{{ error() }}</p>
+    </div>
+    <button mat-stroked-button color="primary" (click)="loadUsers()">
+      <mat-icon>refresh</mat-icon>
+      Réessayer
+    </button>
+  </header>
+</mat-card>
+
+<!-- STATS -->
+<section class="stats">
+  <mat-card class="stat" *ngFor="let stat of stats()" [style.--accent]="stat.color">
+    <div class="stat__icon"><mat-icon>{{ stat.icon }}</mat-icon></div>
+    <div class="stat__content">
+      <span class="stat__label">{{ stat.label }}</span>
+      <span class="stat__value">{{ stat.value }}</span>
+    </div>
+  </mat-card>
+</section>
+
+<!-- ROLE DISTRIBUTION -->
+<section class="grid">
+  <mat-card class="panel chart-card">
+    <header class="panel__header">
+      <div>
+        <h2>Répartition des rôles</h2>
+        <p>{{ totalUsers() }} utilisateurs</p>
+      </div>
+      <button mat-stroked-button color="primary" (click)="loadUsers()" [disabled]="loading()">
+        <mat-icon>refresh</mat-icon>
+        Actualiser
+      </button>
+    </header>
+
+    <div class="chart-wrap">
+      <div class="donut" [ngStyle]="rolePieStyle()"></div>
+      <div class="donut__center"></div>
+      <ul class="legend">
+        <li>
+          <span class="dot" style="--c:{{ roleColors.ROLE_CLIENT }}"></span>
+          <div>
+            <b>Clients</b>
+            <small>{{ roleDistribution().ROLE_CLIENT }} comptes</small>
+          </div>
+        </li>
+        <li>
+          <span class="dot" style="--c:{{ roleColors.ROLE_FREELANCER }}"></span>
+          <div>
+            <b>Freelances</b>
+            <small>{{ roleDistribution().ROLE_FREELANCER }} comptes</small>
+          </div>
+        </li>
+        <li>
+          <span class="dot" style="--c:{{ roleColors.ROLE_ADMIN }}"></span>
+          <div>
+            <b>Administrateurs</b>
+            <small>{{ roleDistribution().ROLE_ADMIN }} comptes</small>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </mat-card>
+</section>
+
+<!-- USERS TABLE -->
+<mat-card class="panel user-table">
+  <header class="panel__header">
+    <div>
+      <h2>Liste des utilisateurs</h2>
+      <p>Gestion centralisée des rôles et de l’activité</p>
+    </div>
+    <div class="user-table__actions">
+      <button mat-stroked-button color="primary" (click)="loadUsers()" [disabled]="loading()">
+        <mat-icon>refresh</mat-icon>
+        Actualiser
+      </button>
+    </div>
+  </header>
+
+  <div class="table-wrapper" role="region" aria-label="Table des utilisateurs">
+    <table *ngIf="sortedUsers().length; else emptyState">
+      <thead>
+        <tr>
+          <th scope="col">Utilisateur</th>
+          <th scope="col">Rôle</th>
+          <th scope="col">Statut</th>
+          <th scope="col">Missions</th>
+          <th scope="col">Inscription</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of sortedUsers()">
+          <td>
+            <div class="user-cell">
+              <span class="user-name">{{ user.name }}</span>
+              <span class="user-email">{{ user.email }}</span>
+            </div>
+          </td>
+          <td>
+            <mat-chip class="role-chip" [ngClass]="roleChipClass(user.role)">
+              {{ roleLabel(user.role) }}
+            </mat-chip>
+          </td>
+          <td>
+            <span class="status-pill" [ngClass]="statusClass(user.status)">
+              {{ user.status }}
+            </span>
+          </td>
+          <td><span class="missions-count">{{ user.missions }}</span></td>
+          <td><span class="join-date">{{ formatJoinDate(user.joined) }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #emptyState>
+      <div class="empty-state">
+        <mat-icon>group_add</mat-icon>
+        <p>Aucun utilisateur pour le moment. Créez un compte pour commencer.</p>
+      </div>
+    </ng-template>
+  </div>
+
+  <div class="loading-overlay" *ngIf="loading()">
+    <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+  </div>
+</mat-card>

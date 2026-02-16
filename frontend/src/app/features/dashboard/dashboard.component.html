@@ -1,0 +1,261 @@
+<mat-toolbar class="topbar" role="navigation" aria-label="Navigation principale">
+  <div class="brand" routerLink="/dashboard" aria-label="Accueil">
+    <svg class="logo-svg" width="34" height="34" viewBox="0 0 48 48" role="img" aria-label="Logo ToWork">
+      <defs>
+        <linearGradient id="twg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#0ea5e9"/>
+          <stop offset="100%" stop-color="#2563eb"/>
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#twg)"/>
+      <path d="M14 18h20a2 2 0 0 0 0-4H14a2 2 0 0 0 0 4zm8 2v14a2 2 0 0 0 4 0V20z" fill="white"/>
+    </svg>
+    <span class="brand-name">ToWork</span>
+  </div>
+
+  <nav class="nav">
+    <a mat-button routerLink="/dashboard" routerLinkActive="active">Tableau de bord</a>
+    <a mat-button routerLink="/missions/new" routerLinkActive="active">Creer une mission</a>
+    <a mat-button routerLink="/missions" routerLinkActive="active">Mes missions</a>
+    <a mat-button routerLink="/candidatures" routerLinkActive="active">Candidatures</a>
+    <a mat-button routerLink="/messages" routerLinkActive="active">Discussions</a>
+    <a mat-button routerLink="/client/wallet" routerLinkActive="active">Wallet</a>
+  </nav>
+
+  <span class="spacer"></span>
+
+  <mat-slide-toggle class="dark-toggle" (change)="toggleDark($event.checked)">
+    Mode sombre
+  </mat-slide-toggle>
+
+  <button mat-icon-button matBadge="3" matBadgeColor="accent" aria-label="Notifications">
+    <mat-icon>notifications</mat-icon>
+  </button>
+
+  <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Profil">
+    <mat-icon>account_circle</mat-icon>
+  </button>
+
+  <mat-menu #userMenu="matMenu">
+    <button mat-menu-item routerLink="/profile"><mat-icon>person</mat-icon><span>Profil</span></button>
+    <button mat-menu-item routerLink="/settings"><mat-icon>settings</mat-icon><span>Parametres</span></button>
+    <mat-divider></mat-divider>
+    <button mat-menu-item routerLink="/login"><mat-icon>logout</mat-icon><span>Deconnexion</span></button>
+  </mat-menu>
+</mat-toolbar>
+
+<section class="layout">
+  <header class="hero">
+    <div class="hero__content">
+      <div class="hero__chips">
+        <span class="pill pill--ghost">Pilotage client</span>
+        <span class="pill pill--primary">Vue en direct</span>
+      </div>
+      <h1>Bonjour {{ userName() }}, on avance ?</h1>
+      <p class="subtitle">
+        Suivez vos missions, les candidatures et l'avancement des freelances depuis un cockpit unique.
+      </p>
+      <div class="hero__tags">
+        <span class="tag">Total: {{ total() }} missions</span>
+        <span class="tag tag--accent">En cours: {{ stats()[2].value }}</span>
+        <span class="tag">En attente: {{ stats()[1].value }}</span>
+      </div>
+      <div class="hero__actions">
+        <button mat-flat-button color="primary" routerLink="/missions/new">
+          <mat-icon>add</mat-icon>
+          Nouvelle mission
+        </button>
+        <button mat-stroked-button color="primary" routerLink="/candidatures">
+          <mat-icon>how_to_reg</mat-icon>
+          Voir les candidatures
+        </button>
+        <button mat-button routerLink="/discussions">
+          <mat-icon>forum</mat-icon>
+          Discussions
+        </button>
+      </div>
+    </div>
+
+    <div class="hero__panel">
+      <div class="hero__metric">
+        <p class="muted">Progression globale</p>
+        <h2>
+          {{
+            total()
+              ? (((stats()[2].value + stats()[3].value) / total() * 100) | number:'1.0-0')
+              : 0
+          }}%
+        </h2>
+        <p class="muted small">missions actives ou terminees</p>
+        <div class="meter">
+          <div class="meter__fill"
+               [style.width.%]="total() ? ((stats()[2].value + stats()[3].value) / total() * 100) : 0"></div>
+        </div>
+      </div>
+      <div class="hero__mini-list">
+        <div class="mini-row">
+          <mat-icon>schedule</mat-icon>
+          <div>
+            <p class="muted">En attente</p>
+            <strong>{{ stats()[1].value }} missions</strong>
+          </div>
+        </div>
+        <div class="mini-row">
+          <mat-icon>work_history</mat-icon>
+          <div>
+            <p class="muted">En cours</p>
+            <strong>{{ stats()[2].value }} missions</strong>
+          </div>
+        </div>
+        <div class="mini-row">
+          <mat-icon>verified</mat-icon>
+          <div>
+            <p class="muted">Terminees</p>
+            <strong>{{ stats()[3].value }} missions</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="stats-grid">
+    <mat-card class="stat" *ngFor="let s of stats() | slice:0:5" [style.--accent]="s.color">
+      <div class="stat__line">
+        <div class="stat__icon"><mat-icon>{{ s.icon }}</mat-icon></div>
+        <span class="stat__label">{{ s.label }}</span>
+      </div>
+      <div class="stat__value">{{ s.value }}</div>
+      <p class="stat__hint">Mise a jour en temps reel</p>
+    </mat-card>
+  </section>
+
+  <section class="main-grid">
+    <mat-card class="panel pipeline">
+      <header class="panel__header">
+        <div>
+          <p class="eyebrow">Suivi en direct</p>
+          <h2>Pipeline des missions</h2>
+        </div>
+        <button mat-stroked-button color="primary" routerLink="/missions">
+          <mat-icon>open_in_new</mat-icon>
+          Ouvrir la liste
+        </button>
+      </header>
+      <div class="pipeline__bars">
+        <div class="bar" *ngFor="let s of stats() | slice:1">
+          <div class="bar__top">
+            <span>{{ s.label }}</span>
+            <span class="bar__value">{{ s.value }}</span>
+          </div>
+          <div class="bar__track">
+            <div class="bar__fill"
+                 [style.background]="s.color"
+                 [style.width.%]="total() ? (s.value / total() * 100) : 0"></div>
+          </div>
+        </div>
+      </div>
+      <div class="pipeline__footer">
+        <span class="muted">Flux actualise</span>
+        <span class="pill pill--ghost">Total {{ total() }}</span>
+      </div>
+    </mat-card>
+
+    <mat-card class="panel quick">
+      <header class="panel__header">
+        <div>
+          <p class="eyebrow">Raccourcis</p>
+          <h2>Actions rapides</h2>
+        </div>
+      </header>
+      <div class="quick__grid">
+        <button mat-stroked-button color="primary" routerLink="/missions/new">
+          <mat-icon>addchart</mat-icon>
+          Lancer une nouvelle mission
+        </button>
+        <button mat-stroked-button color="primary" routerLink="/messages">
+          <mat-icon>forum</mat-icon>
+          Relancer un freelance
+        </button>
+        <button mat-stroked-button color="primary" routerLink="/candidatures">
+          <mat-icon>search</mat-icon>
+          Examiner les candidatures
+        </button>
+        <button mat-stroked-button color="primary" routerLink="/profile">
+          <mat-icon>playlist_add_check</mat-icon>
+          Mettre a jour le brief
+        </button>
+      </div>
+      <mat-divider></mat-divider>
+      <div class="quick__summary">
+        <div>
+          <p class="muted">Budget estime</p>
+          <strong>{{ stats()[2].value * 3500 | currency:'EUR':'symbol':'1.0-0' }}</strong>
+        </div>
+        <div>
+          <p class="muted">Candidatures en cours</p>
+          <strong>{{ stats()[1].value + stats()[2].value }}</strong>
+        </div>
+        <div>
+          <p class="muted">Freelances actifs</p>
+          <strong>{{ activity().length }}</strong>
+        </div>
+      </div>
+    </mat-card>
+  </section>
+
+  <section class="secondary-grid">
+    <mat-card class="panel chart-card">
+      <header class="panel__header">
+        <div>
+          <p class="eyebrow">Vue globale</p>
+          <h2>Repartition des missions</h2>
+          <p class="muted">{{ total() }} missions suivees</p>
+        </div>
+        <button mat-button color="primary">
+          <mat-icon>ios_share</mat-icon>
+          Export
+        </button>
+      </header>
+      <div class="chart-wrap">
+        <div class="donut" [ngStyle]="pieStyle()"></div>
+        <div class="donut__center">
+          <div class="num">{{ total() }}</div>
+          <div class="lbl">Missions</div>
+        </div>
+        <ul class="legend">
+          <li><span class="dot" style="--c:#eab308"></span><div><b>En attente</b><small>{{ stats()[1].value }} missions</small></div></li>
+          <li><span class="dot" style="--c:#10b981"></span><div><b>En cours</b><small>{{ stats()[2].value }} missions</small></div></li>
+          <li><span class="dot" style="--c:#3b82f6"></span><div><b>Terminees</b><small>{{ stats()[3].value }} missions</small></div></li>
+          <li><span class="dot" style="--c:#ef4444"></span><div><b>Annulees</b><small>{{ stats()[4].value }} missions</small></div></li>
+        </ul>
+      </div>
+    </mat-card>
+
+    <mat-card class="panel activity-card">
+      <header class="panel__header">
+        <div>
+          <p class="eyebrow">Chronologie</p>
+          <h2>Activite recente</h2>
+        </div>
+        <mat-chip-set>
+          <mat-chip selected color="primary">Toutes</mat-chip>
+          <mat-chip>En cours</mat-chip>
+          <mat-chip>Terminees</mat-chip>
+        </mat-chip-set>
+      </header>
+
+      <mat-nav-list>
+        <a mat-list-item *ngFor="let a of activity()">
+          <span matListItemTitle>{{ a.title }}</span>
+          <span matListItemLine>{{ a.timeAgo }}</span>
+          <mat-chip
+            class="status"
+            [ngClass]="statusClass(a.status)"
+          >
+            {{ a.status }}
+          </mat-chip>
+        </a>
+      </mat-nav-list>
+    </mat-card>
+  </section>
+</section>

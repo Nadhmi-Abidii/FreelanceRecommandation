@@ -1,0 +1,210 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: #f6f8fb;
+  color: #0f172a;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+/* === NAVBAR FREELANCE (même style que dashboard) === */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 0 2.5rem;
+  background: linear-gradient(180deg, #e5f0ff 0%, #f8fbff 100%);
+  box-shadow: 0 8px 20px -18px rgba(15, 23, 42, 0.65);
+
+  display: flex;
+  align-items: center;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  text-decoration: none;
+  color: #0f172a;
+}
+
+.brand-name {
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-left: 2.5rem;
+}
+
+.nav a {
+  font-weight: 500;
+  font-size: 0.95rem;
+  text-transform: none;
+}
+
+.nav a.active {
+  color: #1d4ed8;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.dark-toggle {
+  margin-right: 0.75rem;
+}
+
+mat-toolbar.topbar {
+  min-height: 64px;
+}
+
+/* === PAGE PORTFOLIO EXISTANTE === */
+
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px 20px;
+  box-shadow: 0 10px 30px -24px rgba(15, 23, 42, 0.45);
+}
+
+.eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #3b82f6;
+  margin: 0 0 4px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.muted {
+  color: #6b7280;
+}
+
+.summary,
+.transactions {
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+
+  h2 {
+    margin: 4px 0 6px;
+    font-size: 30px;
+  }
+}
+
+.summary__extra {
+  text-align: right;
+
+  .label {
+    margin: 0;
+    color: #6b7280;
+  }
+}
+
+.transactions {
+  padding: 12px;
+}
+
+.transactions__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 6px 12px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table__row {
+  display: grid;
+  grid-template-columns: 1fr 2fr 2fr 1fr 1fr;
+  align-items: center;
+  padding: 10px 6px;
+  border-bottom: 1px solid #e5e7eb;
+
+  &--head {
+    font-weight: 600;
+    color: #6b7280;
+  }
+
+  &--empty {
+    justify-content: center;
+  }
+}
+
+.table__amount {
+  font-weight: 700;
+  text-align: right;
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6b7280;
+}
+
+.state {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #fff;
+  border-radius: 12px;
+
+  &--error {
+    border: 1px dashed #fecdd3;
+    color: #b91c1c;
+  }
+
+  &--ghost {
+    border: 1px dashed #dbeafe;
+    color: #1d4ed8;
+  }
+}
+
+@media (max-width: 720px) {
+  .page__head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .table__row {
+    grid-template-columns: 1fr 1fr;
+    grid-row-gap: 6px;
+  }
+
+  .table__row div:nth-child(n + 3) {
+    grid-column: 1 / span 2;
+  }
+}

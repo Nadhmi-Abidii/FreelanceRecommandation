@@ -1,0 +1,189 @@
+<header class="top-bar">
+  <div class="logo" routerLink="/">To<span>Work</span></div>
+  <nav class="main-nav">
+    <a routerLink="/dashboard" routerLinkActive="active">Tableau de bord</a>
+    <a routerLink="/missions/create"
+       routerLinkActive="active"
+       [routerLinkActiveOptions]="{ exact: true }">Créer une mission</a>
+    <a routerLink="/missions" routerLinkActive="active">Mes missions</a>
+    <a routerLink="/applications" class="disabled" aria-disabled="true">Candidatures</a>
+    <a routerLink="/messages" class="disabled" aria-disabled="true">Discussions</a>
+    <a mat-button routerLink="/client/wallet" routerLinkActive="active">Wallett</a>
+  </nav>
+  <div class="cta"></div>
+</header>
+
+<section class="missions">
+
+  <header class="missions__header">
+    <h1>Mes Missions</h1>
+
+    <nav class="missions__filters">
+      <button
+        *ngFor="let filter of filters"
+        type="button"
+        class="missions__filter"
+        [class.missions__filter--active]="filter.value === selectedStatus"
+        (click)="onSelectStatus(filter.value)">
+        {{ filter.label }}
+      </button>
+    </nav>
+
+    <div class="state" *ngIf="loading() || error() || info()">
+      <div *ngIf="loading()">Chargement…</div>
+      <div *ngIf="info()" class="ok">{{ info() }}</div>
+      <div *ngIf="error()" class="err">{{ error() }}</div>
+    </div>
+  </header>
+
+  <div class="missions__table-wrapper">
+    <table class="missions__table">
+      <thead>
+        <tr>
+          <th>Titre</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let mission of filteredMissions">
+          <td class="missions__title">{{ mission.titre }}</td>
+          <td>
+            <span class="badge" [ngClass]="mission.statutBadgeClass">{{ mission.statutLibelle }}</span>
+          </td>
+          <td class="missions__actions">
+            <button type="button" class="link-button" (click)="openView(mission)">Voir</button>
+            <span class="missions__divider">|</span>
+            <button
+              type="button"
+              class="link-button"
+              *ngIf="mission.statut === 'en_cours' || mission.statut === 'en_attente'; else reactiver"
+              (click)="openCancel(mission)">
+              Annuler
+            </button>
+            <span class="missions__divider" *ngIf="mission.rawStatus === 'PENDING_CLOSURE'">|</span>
+            <button
+              type="button"
+              class="link-button"
+              *ngIf="mission.rawStatus === 'PENDING_CLOSURE'"
+              (click)="closeMission(mission)">
+              Clôturer la mission
+            </button>
+            <ng-template #reactiver>
+              <button
+                type="button"
+                class="link-button"
+                [disabled]="mission.statut !== 'annulee'"
+                (click)="mission.statut === 'annulee' && reactivate(mission)">
+                Réactiver
+              </button>
+            </ng-template>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer class="missions__footer">
+    <p>1 - {{ filteredMissions.length }} sur {{ filteredMissions.length }} missions</p>
+    <div class="missions__pagination">
+      <button type="button" class="link-button" disabled>Précédent</button>
+      <span class="missions__page">1</span>
+      <button type="button" class="link-button" disabled>Suivant</button>
+    </div>
+  </footer>
+</section>
+
+<!-- ========= MODAL VOIR (EDITABLE) ========= -->
+<div class="modal-backdrop" *ngIf="showViewModal()">
+  <div class="modal">
+    <header class="modal__header">
+      <h2>Détails de la mission</h2>
+      <button class="modal__close" (click)="closeView()">✕</button>
+    </header>
+
+    <div class="modal__body">
+      <div class="state" *ngIf="!canEditSelected">
+        <div class="err">
+          Mission non éditable : statut "En attente" requis (DRAFT/PAUSED).
+        </div>
+      </div>
+      <form class="readonly-form" [formGroup]="viewForm">
+        <div class="row">
+          <label>Titre</label>
+          <input type="text" formControlName="title">
+        </div>
+
+        <div class="row">
+          <label>Description</label>
+          <textarea rows="4" formControlName="description"></textarea>
+        </div>
+
+        <div class="row two">
+          <div>
+            <label>Budget min</label>
+            <input type="number" formControlName="budgetMin">
+          </div>
+          <div>
+            <label>Type budget</label>
+            <input type="text" formControlName="budgetType" placeholder="FIXED | HOURLY | NEGOTIABLE">
+          </div>
+        </div>
+
+        <div class="row two">
+          <div>
+            <label>Durée (jours)</label>
+            <input type="number" formControlName="estimatedDuration">
+          </div>
+          <div>
+            <label>Niveau</label>
+            <input type="text" formControlName="niveauExperience" placeholder="BEGINNER | INTERMEDIATE | ADVANCED | EXPERT">
+          </div>
+        </div>
+
+        <div class="row two">
+          <div>
+            <label>Type de travail</label>
+            <input type="text" formControlName="typeTravail" placeholder="REMOTE | ON_SITE | HYBRID">
+          </div>
+          <div>
+            <label>Urgent</label>
+            <input type="checkbox" formControlName="isUrgent">
+          </div>
+        </div>
+
+        <div class="row">
+          <label>Compétences</label>
+          <input type="text" formControlName="skillsRequired" placeholder="ex: Angular, Spring">
+        </div>
+      </form>
+    </div>
+ 
+    <footer class="modal__footer">
+      <button class="btn ghost" (click)="closeView()">Fermer</button>
+      <button class="btn" [disabled]="saving() || viewForm.invalid || !canEditSelected" (click)="saveEdit()">
+        {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+      </button>
+    </footer>
+  </div>
+</div>
+
+<!-- ========= MODAL CONFIRM ANNULER ========= -->
+<div class="modal-backdrop" *ngIf="showCancelModal()">
+  <div class="modal small danger">
+    <header class="modal__header">
+      <h2>Annuler la mission</h2>
+      <button class="modal__close" (click)="closeCancel()">✕</button>
+    </header>
+
+    <div class="modal__body">
+      <p>Êtes-vous sûr de vouloir annuler cette mission ?</p>
+      <p class="muted">L’état passera à <strong>Annulée</strong>.</p>
+    </div>
+
+    <footer class="modal__footer">
+      <button class="btn ghost" (click)="closeCancel()">Non</button>
+      <button class="btn danger" (click)="confirmCancel()">Oui, annuler</button>
+    </footer>
+  </div>
+</div>

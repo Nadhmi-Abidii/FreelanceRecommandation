@@ -1,0 +1,64 @@
+.mf-card {
+  margin-top: 12px;
+  border-radius: 12px;
+}
+
+.mf-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+
+  h3 {
+    margin: 0;
+  }
+
+  .muted {
+    margin: 0;
+  }
+}
+
+.mf-loading, .mf-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #6f7785;
+}
+
+.mf-error {
+  color: #c62828;
+}
+
+.mf-readonly {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mf-stars {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  mat-icon {
+    color: #d0d5dd;
+  }
+
+  mat-icon.filled {
+    color: #f5a623;
+  }
+
+  .mf-score {
+    font-weight: 600;
+  }
+}
+
+.mf-comment {
+  margin: 4px 0 0;
+  color: #1f2937;
+}
+
+.muted {
+  color: #6f7785;
+  font-size: 0.9rem;
+}

@@ -1,0 +1,218 @@
+<!-- NAVBAR (same as dashboard) -->
+<mat-toolbar class="topbar" role="navigation" aria-label="Navigation principale">
+  <div class="brand" routerLink="/dashboard" aria-label="ToWork home">
+    <!-- SVG LOGO -->
+    <svg class="logo-svg" width="34" height="34" viewBox="0 0 48 48" role="img" aria-label="ToWork logo">
+      <defs>
+        <linearGradient id="twg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#2563eb" />
+          <stop offset="100%" stop-color="#7c3aed" />
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#twg)" />
+      <path
+        d="M14 18h20a2 2 0 0 0 0-4H14a2 2 0 0 0 0 4zm8 2v14a2 2 0 0 0 4 0V20z"
+        fill="white"
+      />
+    </svg>
+    <span class="brand-name">ToWork</span>
+  </div>
+
+  <nav class="nav">
+    <a mat-button routerLink="/dashboard" routerLinkActive="active">Tableau de bord</a>
+    <a mat-button routerLink="/missions/new" routerLinkActive="active">Créer une mission</a>
+    <a mat-button routerLink="/missions" routerLinkActive="active">Mes missions</a>
+    <a mat-button routerLink="/candidatures" routerLinkActive="active">Candidatures</a>
+    <a mat-button routerLink="/messages" routerLinkActive="active">Discussions</a>
+  </nav>
+
+  <span class="spacer"></span>
+
+  <mat-slide-toggle class="dark-toggle" (change)="toggleDark($event.checked)">
+    Dark
+  </mat-slide-toggle>
+
+  <button mat-icon-button matBadge="3" matBadgeColor="accent" aria-label="Notifications">
+    <mat-icon>notifications</mat-icon>
+  </button>
+
+  <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Profil">
+    <mat-icon>account_circle</mat-icon>
+  </button>
+
+  <mat-menu #userMenu="matMenu">
+    <button mat-menu-item routerLink="/profile">
+      <mat-icon>person</mat-icon>
+      <span>Profil</span>
+    </button>
+    <button mat-menu-item routerLink="/settings">
+      <mat-icon>settings</mat-icon>
+      <span>Paramètres</span>
+    </button>
+    <mat-divider></mat-divider>
+    <button mat-menu-item (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      <span>Déconnexion</span>
+    </button>
+  </mat-menu>
+</mat-toolbar>
+
+<!-- PAGE CONVERSATIONS -->
+<section class="page messages-page">
+  <!-- Header -->
+  <header class="page__head">
+    <div>
+      <p class="eyebrow">Messages</p>
+      <h1>Conversations</h1>
+      <p class="muted">
+        Retrouvez vos échanges par mission et reprenez la discussion là où vous l'avez laissée.
+      </p>
+    </div>
+
+    <div class="page__head-actions">
+      <span class="chip-counter" *ngIf="!loading() && conversations().length">
+        {{ conversations().length }} conversation{{ conversations().length > 1 ? 's' : '' }}
+      </span>
+      <button mat-stroked-button color="primary" type="button" (click)="load()">
+        <mat-icon>refresh</mat-icon>
+        Actualiser
+      </button>
+    </div>
+  </header>
+
+  <!-- Loading bar -->
+  <mat-progress-bar *ngIf="loading()" mode="indeterminate"></mat-progress-bar>
+
+  <!-- Error banner -->
+  <div class="banner banner--error" *ngIf="!loading() && error()">
+    <mat-icon>error_outline</mat-icon>
+    <div>
+      <p>{{ error() }}</p>
+      <small>Réessayez dans un instant.</small>
+    </div>
+    <button mat-button color="primary" type="button" (click)="load()">
+      <mat-icon>refresh</mat-icon>
+      Réessayer
+    </button>
+  </div>
+
+  <!-- Main shell layout -->
+  <div class="shell" *ngIf="!loading() && !error()">
+    <!-- Sidebar: list of conversations -->
+    <aside class="shell__sidebar">
+      <div class="sidebar__header">
+        <div>
+          <h2>Vos conversations</h2>
+          <p class="sidebar__hint">
+            Classées par mission et par dernier message reçu.
+          </p>
+        </div>
+      </div>
+
+      <div class="sidebar__empty" *ngIf="!conversations().length">
+        <mat-icon>chat_bubble_outline</mat-icon>
+        <h3>Aucune conversation</h3>
+        <p>
+          Vos échanges apparaîtront ici dès le premier message avec un client ou un freelance.
+        </p>
+      </div>
+
+      <div class="conversation-list" *ngIf="conversations().length">
+        <button
+          type="button"
+          class="conversation-row"
+          *ngFor="let conv of conversations()"
+          (click)="select(conv)"
+          [class.conversation-row--active]="selected() && selected()!.id === conv.id"
+        >
+          <div class="conversation-row__avatar">
+            <span>
+              {{ displayName(conv)[0] | uppercase }}
+            </span>
+          </div>
+
+          <div class="conversation-row__content">
+            <div class="conversation-row__title-line">
+              <span class="conversation-row__title">
+                {{ displayName(conv) }}
+              </span>
+              <span class="conversation-row__time" *ngIf="conv.lastMessageAt as date">
+                {{ date | date: 'dd MMM HH:mm' }}
+              </span>
+            </div>
+
+            <p class="conversation-row__mission">
+              {{ conv.missionTitle || 'Mission' }}
+            </p>
+
+            <p class="conversation-row__preview">
+              {{ conv.lastMessage || 'Aucun message pour le moment.' }}
+            </p>
+          </div>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Right panel: details / preview -->
+    <main class="shell__content">
+      <ng-container *ngIf="selected() as sel; else noSelection">
+        <div class="thread-header">
+          <div>
+            <p class="eyebrow">Détails de la conversation</p>
+            <h2>{{ displayName(sel) }}</h2>
+            <p class="thread-header__mission">
+              Mission&nbsp;: <strong>{{ sel.missionTitle || 'Mission' }}</strong>
+            </p>
+          </div>
+
+          <div class="thread-header__meta">
+            <div class="meta-item" *ngIf="sel.lastMessageAt as date">
+              <mat-icon>schedule</mat-icon>
+              <span>Dernier message&nbsp;: {{ date | date: 'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <div class="meta-item">
+              <mat-icon>chat</mat-icon>
+              <span>Échange privé entre vous et {{ displayName(sel) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="thread-body">
+          <div class="bubble bubble--you">
+            <span class="bubble__label">Dernier message</span>
+            <p class="bubble__text">
+              {{ sel.lastMessage || 'Aucun message n’a encore été échangé.' }}
+            </p>
+          </div>
+
+          <p class="thread-body__hint">
+            Ouvrez la conversation pour voir l’historique complet et envoyer un nouveau message.
+          </p>
+        </div>
+
+        <div class="thread-actions">
+          <button mat-flat-button color="primary" type="button" (click)="open(sel)">
+            <mat-icon>open_in_new</mat-icon>
+            Ouvrir la conversation
+          </button>
+
+          <button mat-stroked-button type="button">
+            <mat-icon>assignment</mat-icon>
+            Voir la mission
+          </button>
+        </div>
+      </ng-container>
+
+      <ng-template #noSelection>
+        <div class="empty-preview">
+          <mat-icon>forum</mat-icon>
+          <h2>Sélectionnez une conversation</h2>
+          <p>
+            Choisissez une conversation dans la colonne de gauche pour voir les détails
+            et continuer vos échanges.
+          </p>
+        </div>
+      </ng-template>
+    </main>
+  </div>
+</section>

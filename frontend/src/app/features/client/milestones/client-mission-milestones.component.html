@@ -1,0 +1,178 @@
+<mat-toolbar class="topbar" role="navigation" aria-label="Navigation principale">
+  <div class="brand" routerLink="/dashboard" aria-label="Accueil">
+    <svg class="logo-svg" width="34" height="34" viewBox="0 0 48 48" role="img" aria-label="Logo ToWork">
+      <defs>
+        <linearGradient id="twg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#0ea5e9"></stop>
+          <stop offset="100%" stop-color="#2563eb"></stop>
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#twg)"></rect>
+      <path d="M14 18h20a2 2 0 0 0 0-4H14a2 2 0 0 0 0 4zm8 2v14a2 2 0 0 0 4 0V20z" fill="white"></path>
+    </svg>
+    <span class="brand-name">ToWork</span>
+  </div>
+
+  <nav class="nav">
+    <a mat-button routerLink="/dashboard" routerLinkActive="active">Tableau de bord</a>
+    <a mat-button routerLink="/missions/new" routerLinkActive="active">Creer une mission</a>
+    <a mat-button routerLink="/missions" routerLinkActive="active">Mes missions</a>
+    <a mat-button routerLink="/candidatures" routerLinkActive="active">Candidatures</a>
+    <a mat-button routerLink="/messages" routerLinkActive="active">Discussions</a>
+    <a mat-button routerLink="/client/wallet" routerLinkActive="active">Wallet</a>
+  </nav>
+
+  <span class="spacer"></span>
+
+  <mat-slide-toggle class="dark-toggle" (change)="toggleDark($event.checked)">
+    Mode sombre
+  </mat-slide-toggle>
+
+  <button mat-icon-button matBadge="3" matBadgeColor="accent" aria-label="Notifications">
+    <mat-icon>notifications</mat-icon>
+  </button>
+
+  <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Profil">
+    <mat-icon>account_circle</mat-icon>
+  </button>
+
+  <mat-menu #userMenu="matMenu">
+    <button mat-menu-item routerLink="/profile">
+      <mat-icon>person</mat-icon><span>Profil</span>
+    </button>
+    <button mat-menu-item routerLink="/settings">
+      <mat-icon>settings</mat-icon><span>Parametres</span>
+    </button>
+    <mat-divider></mat-divider>
+    <button mat-menu-item routerLink="/login">
+      <mat-icon>logout</mat-icon><span>Deconnexion</span>
+    </button>
+  </mat-menu>
+</mat-toolbar>
+
+<main class="layout">
+  <section class="page">
+    <section class="milestones">
+      <header class="milestones__head">
+        <div>
+          <p class="eyebrow">Jalons</p>
+          <h2>Suivi des paiements</h2>
+          <p class="muted">Ajoutez, validez ou refusez les livrables.</p>
+        </div>
+        <button mat-flat-button color="primary" type="button" (click)="toggleForm()">
+          <mat-icon>add</mat-icon>
+          Ajouter un jalon
+        </button>
+      </header>
+
+      <mat-progress-bar *ngIf="loading()" mode="indeterminate"></mat-progress-bar>
+
+      <div class="state state--error" *ngIf="!loading() && error()">
+        <mat-icon>error_outline</mat-icon>
+        <div>
+          <p>{{ error() }}</p>
+          <small>Reessayez plus tard.</small>
+        </div>
+      </div>
+
+      <mat-card appearance="outlined" class="form-card" *ngIf="showForm()">
+        <form class="form" [formGroup]="form" (ngSubmit)="create()">
+          <mat-form-field appearance="outline">
+            <mat-label>Titre</mat-label>
+            <input matInput formControlName="title" placeholder="Prototype, sprint 1...">
+            <mat-error *ngIf="form.controls.title.hasError('required')">Titre requis</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" rows="2"></textarea>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Montant (EUR)</mat-label>
+            <input matInput type="number" formControlName="amount" min="1">
+            <mat-error *ngIf="form.controls.amount.hasError('required')">Montant requis</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Date d echeance</mat-label>
+            <input matInput type="date" formControlName="dueDate">
+          </mat-form-field>
+          <div class="form__actions">
+            <span class="muted">Les montants seront payes apres validation.</span>
+            <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || creating()">
+              <mat-icon>save</mat-icon>
+              Enregistrer
+            </button>
+          </div>
+        </form>
+      </mat-card>
+
+      <mat-card appearance="outlined" class="list">
+        <div class="table">
+      <div class="table__row table__row--head">
+        <div>Titre</div>
+        <div>Description</div>
+        <div>Montant</div>
+        <div>Echeance</div>
+        <div>Statut</div>
+        <div>Livrables</div>
+        <div>Actions</div>
+      </div>
+
+      <div class="table__row" *ngFor="let m of milestones()">
+        <div class="title">{{ m.title }}</div>
+            <div class="desc">{{ m.description || '-' }}</div>
+            <div class="amount">{{ m.amount | currency:'EUR' }}</div>
+            <div>{{ m.dueDate | date:'dd MMM yyyy' }}</div>
+        <div>
+          <mat-chip [color]="statusColor(m.status)" selected>{{ statusLabel(m.status) }}</mat-chip>
+          <span class="pill pill--wallet" *ngIf="(m.status || '').toUpperCase() === 'PAID'">Paye via wallet</span>
+        </div>
+        <div>
+          <div class="deliverables" *ngIf="m.deliverables?.length; else noDeliverable">
+            <a
+              *ngFor="let d of m.deliverables"
+              class="deliverable"
+              [href]="d.downloadUrl"
+              target="_blank"
+              rel="noopener"
+            >
+              <mat-icon>attach_file</mat-icon>
+              {{ d.fileName }}
+            </a>
+          </div>
+          <ng-template #noDeliverable>-</ng-template>
+        </div>
+        <div class="actions">
+          <button
+            mat-stroked-button
+            color="primary"
+            type="button"
+            *ngIf="(m.status || '').toUpperCase() === 'SUBMITTED'"
+            (click)="validate(m.id!)"
+            [disabled]="actionLoading()"
+          >
+            Valider
+          </button>
+          <button
+            mat-stroked-button
+            color="warn"
+            type="button"
+            *ngIf="(m.status || '').toUpperCase() === 'SUBMITTED'"
+            (click)="refuse(m.id!)"
+            [disabled]="actionLoading()"
+          >
+            Refuser
+          </button>
+            </div>
+          </div>
+
+          <div class="table__row table__row--empty" *ngIf="!milestones().length && !loading()">
+            <div class="empty">
+              <mat-icon>playlist_add</mat-icon>
+              <p>Aucun jalon pour le moment.</p>
+            </div>
+          </div>
+        </div>
+      </mat-card>
+    </section>
+  </section>
+</main>

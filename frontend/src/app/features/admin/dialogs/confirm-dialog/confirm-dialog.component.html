@@ -1,0 +1,17 @@
+<h2 mat-dialog-title>
+  <mat-icon [style.color]="data.warn ? '#b91c1c' : ''">{{ data.warn ? 'warning' : 'help' }}</mat-icon>
+  &nbsp;{{ data.title || 'Confirmer' }}
+</h2>
+
+<div mat-dialog-content class="dialog-body">
+  <p>{{ data.message || 'Êtes-vous sûr ?' }}</p>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="close(false)">
+    <mat-icon>close</mat-icon>&nbsp;{{ data.cancelText || 'Annuler' }}
+  </button>
+  <button mat-flat-button [color]="data.warn ? 'warn' : 'primary'" (click)="close(true)">
+    <mat-icon>check</mat-icon>&nbsp;{{ data.confirmText || 'Confirmer' }}
+  </button>
+</div>

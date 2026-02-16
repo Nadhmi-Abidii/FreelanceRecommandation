@@ -1,0 +1,246 @@
+<!-- NAVBAR -->
+<mat-toolbar class="topbar" role="navigation" aria-label="Navigation administrateur">
+  <div class="brand" routerLink="/admin" routerLinkActive="active" aria-label="ToWork dashboard">
+    <svg class="logo-svg" width="34" height="34" viewBox="0 0 48 48" role="img" aria-label="ToWork logo">
+      <defs>
+        <linearGradient id="twg-admin" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#2563eb"/>
+          <stop offset="100%" stop-color="#7c3aed"/>
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#twg-admin)"/>
+      <path d="M14 18h20a2 2 0 0 0 0-4H14a2 2 0 0 0 0 4zm8 2v14a2 2 0 0 0 4 0V20z" fill="white"/>
+    </svg>
+    <span class="brand-name">ToWork</span>
+  </div>
+
+  <nav class="nav" aria-label="Liens administrateur">
+    <a mat-button routerLink="/admin" routerLinkActive="active">Tableau de bord</a>
+    <a mat-button routerLink="/admin/users" routerLinkActive="active">Utilisateurs</a>
+     <a mat-button routerLink="/admin/domaines" routerLinkActive="active">Domaines</a>
+    <a mat-button routerLink="/support" routerLinkActive="active">Support</a>
+  </nav>
+
+  <span class="spacer"></span>
+
+  <mat-slide-toggle class="dark-toggle" (change)="toggleDark($event.checked)">
+    Dark
+  </mat-slide-toggle>
+
+  <button mat-icon-button matBadge="5" matBadgeColor="accent" aria-label="Notifications">
+    <mat-icon>notifications</mat-icon>
+  </button>
+
+  <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Profil administrateur">
+    <mat-icon>shield_person</mat-icon>
+  </button>
+
+  <mat-menu #userMenu="matMenu">
+    <button mat-menu-item routerLink="/profile"><mat-icon>person</mat-icon><span>Profil</span></button>
+    <button mat-menu-item routerLink="/settings"><mat-icon>settings</mat-icon><span>Paramètres</span></button>
+    <mat-divider></mat-divider>
+  <button mat-menu-item (click)="logout()">
+    <mat-icon>logout</mat-icon><span>Déconnexion</span>
+  </button>  </mat-menu>
+</mat-toolbar>
+
+<div class="layout admin-layout">
+  <!-- HERO -->
+  <section class="hero admin-hero">
+    <div class="hero__content">
+      <p class="eyebrow">Tableau de bord administrateur</p>
+      <h1>Bonjour, {{ adminName() }} <span class="wave">👋</span></h1>
+      <p class="subtitle">
+        Suivez les comptes clients et freelances, et gardez un œil sur la santé de la plateforme.
+      </p>
+      <div class="hero__chips">
+        <span class="pill pill--primary">{{ totalUsers() }} utilisateurs</span>
+        <span class="pill pill--ghost">Actifs : {{ totalUsers() - inactiveUsers() }}</span>
+        <span class="pill pill--ghost">Inactifs : {{ inactiveUsers() }}</span>
+      </div>
+      <div class="hero__actions">
+        <button mat-flat-button color="primary" routerLink="/admin/users">
+          <mat-icon>group</mat-icon>
+          Gérer les utilisateurs
+        </button>
+        <button mat-stroked-button color="primary" routerLink="/admin/domaines">
+          <mat-icon>category</mat-icon>
+          Domaines
+        </button>
+      </div>
+    </div>
+
+    <div class="hero__panel admin-hero__panel">
+      <div class="hero__metric">
+        <span class="small muted">Total comptes</span>
+        <h2>{{ totalUsers() }}</h2>
+        <p class="small muted">Synchronisé avec les données en temps réel</p>
+        <div class="meter">
+          <div
+            class="meter__fill"
+            [style.width.%]="inactivePercent()"
+          ></div>
+        </div>
+      </div>
+      <div class="hero__mini-list">
+        <div class="mini-row">
+          <mat-icon>verified_user</mat-icon>
+          <div>
+            <div>Actifs</div>
+            <div class="small muted">{{ totalUsers() - inactiveUsers() }} comptes</div>
+          </div>
+        </div>
+        <div class="mini-row">
+          <mat-icon>pause_circle</mat-icon>
+          <div>
+            <div>Inactifs</div>
+            <div class="small muted">{{ inactiveUsers() }} à relancer</div>
+          </div>
+        </div>
+        <div class="mini-row">
+          <mat-icon>business_center</mat-icon>
+          <div>
+            <div>Clients</div>
+            <div class="small muted">{{ roleDistribution().ROLE_CLIENT }} comptes</div>
+          </div>
+        </div>
+        <div class="mini-row">
+          <mat-icon>travel_explore</mat-icon>
+          <div>
+            <div>Freelances</div>
+            <div class="small muted">{{ roleDistribution().ROLE_FREELANCER }} profils</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats-grid stats-grid--admin">
+    <mat-card class="stat" *ngFor="let stat of stats()" [style.--accent]="stat.color">
+      <div class="stat__line">
+        <div class="stat__icon" [style.background]="stat.color">
+          <mat-icon>{{ stat.icon }}</mat-icon>
+        </div>
+        <div class="stat__text">
+          <span class="stat__label">{{ stat.label }}</span>
+          <span class="stat__value">{{ stat.value }}</span>
+          <span class="stat__hint">Vue globale</span>
+        </div>
+      </div>
+    </mat-card>
+  </section>
+
+  <!-- CONTENT GRID -->
+  <section class="main-grid admin-main-grid">
+    <mat-card class="panel chart-card">
+      <header class="panel__header">
+        <div>
+          <h2>Répartition des rôles</h2>
+          <p>{{ totalLabel() }}</p>
+        </div>
+        <button mat-stroked-button color="primary">
+          <mat-icon>ios_share</mat-icon> Exporter
+        </button>
+      </header>
+
+      <div class="chart-wrap">
+        <div class="donut" [ngStyle]="rolePieStyle()"></div>
+        <div class="donut__center">
+        </div>
+        <ul class="legend">
+          <li><span class="dot" style="--c:{{ roleColors.ROLE_CLIENT }}"></span><div><b>Clients</b><small>{{ roleDistribution().ROLE_CLIENT }} comptes</small></div></li>
+          <li><span class="dot" style="--c:{{ roleColors.ROLE_FREELANCER }}"></span><div><b>Freelances</b><small>{{ roleDistribution().ROLE_FREELANCER }} comptes</small></div></li>
+          <li><span class="dot" style="--c:{{ roleColors.ROLE_ADMIN }}"></span><div><b>Administrateurs</b><small>{{ roleDistribution().ROLE_ADMIN }} comptes</small></div></li>
+        </ul>
+      </div>
+    </mat-card>
+
+    <mat-card class="panel user-card">
+      <header class="panel__header">
+        <div>
+          <h2>Derniers comptes créés</h2>
+          <p>Suivi rapide des utilisateurs récemment inscrits</p>
+        </div>
+        <button mat-stroked-button color="primary">
+          <mat-icon>filter_list</mat-icon> Filtres
+        </button>
+      </header>
+
+      <div class="user-card__list" role="list">
+        <div class="user-card__item" role="listitem" *ngFor="let user of highlightedUsers()">
+          <div class="user-card__info">
+            <span class="user-card__name">{{ user.name }}</span>
+            <span class="user-card__email">{{ user.email }}</span>
+          </div>
+          <div class="user-card__meta">
+            <mat-chip class="role-chip" [ngClass]="roleChipClass(user.role)">{{ roleLabel(user.role) }}</mat-chip>
+            <span class="status-pill" [ngClass]="statusClass(user.status)">{{ user.status }}</span>
+          </div>
+        </div>
+      </div>
+    </mat-card>
+  </section>
+
+  <!-- USERS TABLE -->
+  <mat-card class="panel user-table">
+    <header class="panel__header">
+      <div>
+        <h2>Liste des utilisateurs</h2>
+        <p>Gestion centralisée des rôles et de l’activité</p>
+      </div>
+      <div class="user-table__actions">
+        <button mat-stroked-button color="primary">
+          <mat-icon>file_download</mat-icon> Exporter
+        </button>
+        <button mat-icon-button matTooltip="Actualiser">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </div>
+    </header>
+
+    <div class="table-wrapper" role="region" aria-label="Table des utilisateurs">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Utilisateur</th>
+            <th scope="col">Rôle</th>
+            <th scope="col">Statut</th>
+            <th scope="col">Missions</th>
+            <th scope="col">Inscription</th>
+            <th scope="col" class="actions-col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of sortedUsers()">
+            <td>
+              <div class="user-cell">
+                <span class="user-name">{{ user.name }}</span>
+                <span class="user-email">{{ user.email }}</span>
+              </div>
+            </td>
+            <td>
+              <mat-chip class="role-chip" [ngClass]="roleChipClass(user.role)">{{ roleLabel(user.role) }}</mat-chip>
+            </td>
+            <td>
+              <span class="status-pill" [ngClass]="statusClass(user.status)">{{ user.status }}</span>
+            </td>
+            <td><span class="missions-count">{{ user.missions }}</span></td>
+            <td><span class="join-date">{{ formatJoinDate(user.joined) }}</span></td>
+            <td class="actions-col">
+              <button mat-icon-button color="primary" matTooltip="Modifier" (click)="openEditDialog(user)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button matTooltip="Suspendre">
+                <mat-icon>gpp_maybe</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" matTooltip="Supprimer" (click)="openDeleteDialog(user)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </mat-card>
+</div>

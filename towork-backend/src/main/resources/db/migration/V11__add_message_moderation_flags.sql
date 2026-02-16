@@ -1,0 +1,12 @@
+-- Add moderation flags for messages and candidature_messages
+ALTER TABLE IF EXISTS messages
+    ADD COLUMN IF NOT EXISTS is_flagged BOOLEAN NOT NULL DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS flag_score DOUBLE PRECISION,
+    ADD COLUMN IF NOT EXISTS flag_label VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS flag_reason TEXT;
+
+ALTER TABLE IF EXISTS candidature_messages
+    ADD COLUMN IF NOT EXISTS is_flagged BOOLEAN NOT NULL DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS flag_score DOUBLE PRECISION,
+    ADD COLUMN IF NOT EXISTS flag_label VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS flag_reason TEXT;

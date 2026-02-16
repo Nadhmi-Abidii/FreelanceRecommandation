@@ -1,0 +1,288 @@
+<!-- <mat-toolbar class="topbar" role="navigation" aria-label="Navigation administrateur">
+  <div class="brand" routerLink="/admin" routerLinkActive="active" aria-label="Retour au tableau de bord">
+    <svg class="logo-svg" width="34" height="34" viewBox="0 0 48 48" role="img" aria-label="ToWork logo">
+      <defs>
+        <linearGradient id="twg-admin-domains" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#2563eb"/>
+          <stop offset="100%" stop-color="#7c3aed"/>
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#twg-admin-domains)"/>
+      <path d="M14 18h20a2 2 0 0 0 0-4H14a2 2 0 0 0 0 4zm8 2v14a2 2 0 0 0 4 0V20z" fill="white"/>
+    </svg>
+    <span class="brand-name">ToWork</span>
+  </div>
+
+  <nav class="nav" aria-label="Liens administrateur">
+    <a mat-button routerLink="/admin" routerLinkActive="active">Tableau de bord</a>
+    <a mat-button routerLink="/admin" routerLinkActive="active">Utilisateurs</a>
+    <a mat-button routerLink="/admin/domaines" routerLinkActive="active">Domaines</a>
+    <a mat-button routerLink="/missions" routerLinkActive="active">Missions</a>
+    <a mat-button routerLink="/support" routerLinkActive="active">Support</a>
+  </nav>
+
+  <span class="spacer"></span>
+
+  <mat-slide-toggle class="dark-toggle" (change)="toggleDark($event.checked)">Dark</mat-slide-toggle>
+
+  <button mat-icon-button matBadge="5" matBadgeColor="accent" aria-label="Notifications">
+    <mat-icon>notifications</mat-icon>
+  </button>
+
+  <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Profil administrateur">
+    <mat-icon>shield_person</mat-icon>
+  </button>
+
+  <mat-menu #userMenu="matMenu">
+    <button mat-menu-item routerLink="/profile"><mat-icon>person</mat-icon><span>Profil</span></button>
+    <button mat-menu-item routerLink="/settings"><mat-icon>settings</mat-icon><span>Paramètres</span></button>
+    <mat-divider></mat-divider>
+    <button mat-menu-item routerLink="/login"><mat-icon>logout</mat-icon><span>Déconnexion</span></button>
+  </mat-menu>
+</mat-toolbar>
+
+<section class="hero domain-hero">
+  <div class="hero__content">
+    <p class="eyebrow">Domaines &amp; compétences</p>
+    <h1>Bonjour, {{ adminName() }} <span class="wave">👋</span></h1>
+    <p class="subtitle">Administrez le catalogue des domaines proposés aux freelances et clients.</p>
+  </div>
+  <button mat-raised-button color="primary" class="hero__cta" type="button" (click)="cancelEditDomain()">
+    <mat-icon>add_circle</mat-icon> Nouveau domaine
+  </button>
+</section>
+
+<section class="domains" aria-labelledby="domains-title">
+  <header class="domains__header">
+    <div>
+      <p class="eyebrow">Catalogue</p>
+      <h2 id="domains-title">Gérez vos domaines d&apos;expertise</h2>
+      <p>Ajoutez, mettez à jour et supprimez les domaines qui structurent vos missions.</p>
+    </div>
+    <button mat-stroked-button color="primary" type="button" (click)="cancelEditDomain()" *ngIf="isEditingDomain()">
+      <mat-icon>refresh</mat-icon>
+      Nouveau domaine
+    </button>
+  </header>
+
+  <div class="domain-stats">
+    <mat-card class="panel domain-stat">
+      <div class="domain-stat__icon" aria-hidden="true"><mat-icon>category</mat-icon></div>
+      <div class="domain-stat__content">
+        <span class="domain-stat__label">Domaines actifs</span>
+        <span class="domain-stat__value">{{ totalDomains() }}</span>
+      </div>
+    </mat-card>
+    <mat-card class="panel domain-stat">
+      <div class="domain-stat__icon" aria-hidden="true"><mat-icon>stars</mat-icon></div>
+      <div class="domain-stat__content">
+        <span class="domain-stat__label">Compétences référencées</span>
+        <span class="domain-stat__value">{{ totalDomainSkills() }}</span>
+      </div>
+    </mat-card>
+    <mat-card class="panel domain-stat">
+      <div class="domain-stat__icon" aria-hidden="true"><mat-icon>trending_up</mat-icon></div>
+      <div class="domain-stat__content">
+        <span class="domain-stat__label">Domaine le plus riche</span>
+        <span class="domain-stat__value domain-stat__value--text">{{ topDomainLabel() }}</span>
+      </div>
+    </mat-card>
+  </div>
+
+  <div class="domains__grid">
+    <mat-card class="panel domain-form">
+      <header class="panel__header">
+        <div>
+          <h2>{{ isEditingDomain() ? 'Modifier un domaine' : 'Ajouter un domaine' }}</h2>
+          <p>
+            {{ isEditingDomain() ? 'Mettez à jour le nom, la description ou les compétences associées au domaine sélectionné.' :
+            'Déclarez un nouveau domaine et associez-lui les compétences attendues.' }}
+          </p>
+        </div>
+        <button mat-stroked-button color="primary" type="button" (click)="cancelEditDomain()" *ngIf="isEditingDomain()">
+          <mat-icon>close</mat-icon>
+          Annuler
+        </button>
+      </header>
+
+      <form class="domain-form__form" [formGroup]="domainForm" (ngSubmit)="submitDomain()" autocomplete="off">
+        <mat-form-field appearance="outline">
+          <mat-label>Nom du domaine</mat-label>
+          <input matInput formControlName="name" required maxlength="60"/>
+          <mat-hint align="end">{{ domainNameControl.value.length }}/60</mat-hint>
+          <mat-error *ngIf="domainNameControl.hasError('required')">Le nom du domaine est requis.</mat-error>
+          <mat-error *ngIf="domainNameControl.hasError('maxlength')">60 caractères maximum.</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Description</mat-label>
+          <textarea matInput formControlName="description" rows="3" maxlength="160"></textarea>
+          <mat-hint align="end">{{ domainDescriptionControl.value.length }}/160</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="domain-form__chips">
+          <mat-label>Compétences associées</mat-label>
+          <mat-chip-grid #chipGrid aria-label="Compétences du domaine">
+            <mat-chip-row *ngFor="let skill of domainSkills(); let i = index; trackBy: trackSkill" (removed)="removeSkill(i)">
+              {{ skill }}
+              <button mat-icon-button matChipRemove type="button" aria-label="Supprimer {{ skill }}">
+                <mat-icon>close</mat-icon>
+              </button>
+            </mat-chip-row>
+            <input
+              placeholder="Ajouter une compétence"
+              [matChipInputFor]="chipGrid"
+              [matChipInputSeparatorKeyCodes]="skillSeparators"
+              [matChipInputAddOnBlur]="true"
+              (matChipInputTokenEnd)="addSkill($event)"/>
+          </mat-chip-grid>
+          <mat-hint>Appuyez sur Entrée pour enregistrer la compétence.</mat-hint>
+        </mat-form-field>
+
+        <p class="domain-form__helper" *ngIf="domainSkills().length === 0 && domainForm.touched">
+          Ajoutez au moins une compétence pour valider le domaine.
+        </p>
+
+        <div class="domain-form__actions">
+          <button mat-stroked-button type="button" (click)="resetDomainForm()">
+            Réinitialiser
+          </button>
+          <button mat-flat-button color="primary" type="submit" [disabled]="domainForm.invalid || domainSkills().length === 0">
+            <mat-icon>{{ isEditingDomain() ? 'save' : 'add_circle' }}</mat-icon>
+            {{ isEditingDomain() ? 'Mettre à jour' : 'Ajouter le domaine' }}
+          </button>
+        </div>
+      </form>
+    </mat-card>
+
+    <div class="domains__right">
+      <mat-card class="panel domain-table">
+        <header class="panel__header">
+          <div>
+            <h2>Domaines enregistrés</h2>
+            <p>Recherchez, modifiez ou supprimez les domaines existants.</p>
+          </div>
+        </header>
+
+        <div class="domain-table__controls">
+          <mat-form-field appearance="outline" class="domain-table__search">
+            <mat-label>Rechercher un domaine</mat-label>
+            <mat-icon matPrefix>search</mat-icon>
+            <input
+              matInput
+              type="search"
+              [value]="domainSearch()"
+              (input)="setDomainSearch($any($event.target).value)"
+              placeholder="Nom du domaine ou compétence"/>
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              aria-label="Effacer la recherche"
+              *ngIf="domainSearch()"
+              (click)="clearDomainSearch()">
+              <mat-icon>close</mat-icon>
+            </button>
+          </mat-form-field>
+        </div>
+
+        <div class="table-wrapper" role="region" aria-label="Table des domaines">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Domaine</th>
+                <th scope="col">Compétences</th>
+                <th scope="col">Mise à jour</th>
+                <th scope="col" class="actions-col">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="let domain of filteredDomains(); trackBy: trackDomain"
+                (click)="selectDomain(domain)"
+                [class.is-selected]="selectedDomainId() === domain.id">
+                <td>
+                  <div class="domain-table__info">
+                    <span class="domain-table__name">{{ domain.name }}</span>
+                    <span class="domain-table__desc">{{ domain.description || 'Aucune description' }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="domain-table__skills">
+                    <span
+                      class="domain-skill-chip domain-skill-chip--compact"
+                      *ngFor="let skill of (domain.skills | slice:0:3); trackBy: trackSkill">
+                      {{ skill }}
+                    </span>
+                    <span class="domain-skill-chip domain-skill-chip--more" *ngIf="domain.skills.length > 3">
+                      +{{ domain.skills.length - 3 }}
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <span class="join-date">{{ formatDomainDate(domain.updatedAt ?? domain.createdAt) }}</span>
+                </td>
+                <td class="actions-col">
+                  <button
+                    mat-icon-button
+                    color="primary"
+                    type="button"
+                    aria-label="Modifier le domaine {{ domain.name }}"
+                    (click)="editDomain(domain); $event.stopPropagation()">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button
+                    mat-icon-button
+                    color="warn"
+                    type="button"
+                    aria-label="Supprimer le domaine {{ domain.name }}"
+                    (click)="deleteDomain(domain); $event.stopPropagation()">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="filteredDomains().length === 0">
+                <td colspan="4" class="empty-state">
+                  <mat-icon>sentiment_dissatisfied</mat-icon>
+                  <p>Aucun domaine ne correspond à votre recherche.</p>
+                  <small>Essayez un autre mot-clé ou ajoutez un nouveau domaine.</small>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </mat-card>
+
+      <mat-card class="panel domain-detail" *ngIf="selectedDomain() as domain">
+        <header class="panel__header">
+          <div>
+            <h2>{{ domain.name }}</h2>
+            <p>{{ domain.description || 'Aucune description renseignée pour ce domaine.' }}</p>
+          </div>
+          <button
+            mat-icon-button
+            color="primary"
+            type="button"
+            aria-label="Modifier ce domaine"
+            (click)="editDomain(domain)">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </header>
+
+        <div class="domain-detail__body">
+          <p class="domain-detail__meta">
+            Créé le {{ formatDomainDate(domain.createdAt) }}
+            <span *ngIf="domain.updatedAt"> · Mis à jour le {{ formatDomainDate(domain.updatedAt) }}</span>
+          </p>
+
+          <div class="domain-detail__skills" role="list" aria-label="Compétences du domaine">
+            <span class="domain-skill-chip" *ngFor="let skill of domain.skills; trackBy: trackSkill" role="listitem">
+              <mat-icon>verified</mat-icon>
+              {{ skill }}
+            </span>
+          </div>
+        </div>
+      </mat-card>
+    </div>
+  </div>
+</section> -->

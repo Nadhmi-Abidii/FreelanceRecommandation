@@ -1,0 +1,185 @@
+<mat-toolbar class="topbar" role="navigation" aria-label="Navigation freelancer">
+  <div class="brand" routerLink="/freelancer" routerLinkActive="active" aria-label="ToWork dashboard">
+    <svg class="logo-svg" width="34" height="34" viewBox="0 0 48 48" role="img" aria-label="ToWork logo">
+      <defs>
+        <linearGradient id="twg-admin" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#2563eb"/>
+          <stop offset="100%" stop-color="#7c3aed"/>
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#twg-admin)"/>
+      <path d="M14 18h20a2 2 0 0 0 0-4H14a2 2 0 0 0 0 4zm8 2v14a2 2 0 0 0 4 0V20z" fill="white"/>
+    </svg>
+    <span class="brand-name">ToWork</span>
+  </div>
+
+  <nav class="nav" aria-label="Liens freelancer">
+    <a mat-button routerLink="/freelancer" routerLinkActive="active">Tableau de bord</a>
+    <a mat-button routerLink="/freelancer/missions" routerLinkActive="active">missions</a>
+    <a mat-button routerLink="/freelancer/candidatures" routerLinkActive="active">candidatures</a>
+  </nav>
+
+  <span class="spacer"></span>
+
+  <mat-slide-toggle class="dark-toggle" disabled>
+    Dark
+  </mat-slide-toggle>
+
+  <button mat-icon-button matBadge="5" matBadgeColor="accent" aria-label="Notifications">
+    <mat-icon>notifications</mat-icon>
+  </button>
+
+  <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Profil freelancer">
+    <mat-icon>shield_person</mat-icon>
+  </button>
+
+  <mat-menu #userMenu="matMenu">
+    <button mat-menu-item routerLink="/profile"><mat-icon>person</mat-icon><span>Profil</span></button>
+    <button mat-menu-item routerLink="/settings"><mat-icon>settings</mat-icon><span>Paramètres</span></button>
+    <mat-divider></mat-divider>
+      <button mat-menu-item (click)="logout()">
+    <mat-icon>logout</mat-icon>
+    <span>Déconnexion</span>
+  </button>
+  </mat-menu>
+</mat-toolbar>
+
+<section class="screen">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Freelancer</p>
+      <h1>Mes candidatures</h1>
+      <p class="muted">Liste de toutes vos candidatures et échanges avec les clients.</p>
+    </div>
+    <div class="hero__actions">
+      <a mat-stroked-button color="primary" routerLink="/freelancer/dashboard">
+        <mat-icon>arrow_back</mat-icon>
+        Tableau de bord
+      </a>
+      <button mat-flat-button color="primary" type="button" (click)="reload()" [disabled]="loading()">
+        <mat-icon>refresh</mat-icon>
+        Rafraîchir
+      </button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <aside class="panel list">
+      <div class="panel__head">
+        <div>
+          <p class="eyebrow">Candidatures</p>
+          <h2>{{ candidatures().length }} profil{{ candidatures().length > 1 ? 's' : '' }}</h2>
+        </div>
+      </div>
+
+      <mat-progress-bar *ngIf="loading()" mode="indeterminate"></mat-progress-bar>
+
+      <div class="panel__error" *ngIf="!loading() && error()">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ error() }}</span>
+      </div>
+
+      <div class="empty" *ngIf="!loading() && !error() && candidatures().length === 0">
+        <mat-icon>work_outline</mat-icon>
+        <p>Aucune candidature pour le moment.</p>
+      </div>
+
+      <article
+        class="card"
+        *ngFor="let item of candidatures()"
+        [class.is-active]="item.id === selectedId()"
+        (click)="select(item.id)"
+      >
+        <div class="card__top">
+          <div>
+            <h3>{{ item.missionLabel }}</h3>
+            <p class="muted">Envoyée le {{ item.createdAt | date:'dd MMM yyyy' }}</p>
+          </div>
+          <span class="status" [ngClass]="item.tone">{{ item.statusLabel }}</span>
+        </div>
+        <p class="preview" *ngIf="item.lastPreview">{{ item.lastPreview }}</p>
+        <div class="meta">
+          <span *ngIf="item.resumeUrl"><mat-icon>attach_file</mat-icon>CV joint</span>
+          <span *ngIf="item.clientMessage"><mat-icon>reply</mat-icon>Réponse client</span>
+        </div>
+      </article>
+    </aside>
+
+    <section class="panel conversation" *ngIf="selected() as selected">
+      <header class="conversation__head">
+        <div>
+          <p class="eyebrow">Conversation</p>
+          <h2>{{ selected.missionLabel }}</h2>
+        </div>
+        <span class="status status--pill" [ngClass]="selected.tone">{{ selected.statusLabel }}</span>
+      </header>
+
+      <mat-progress-bar *ngIf="loading()" mode="indeterminate"></mat-progress-bar>
+
+      <div class="conversation__body" *ngIf="!loading()">
+        <div
+          class="bubble"
+          *ngFor="let msg of conversation()"
+          [class.is-client]="msg.sender === 'client'"
+        >
+          <div class="bubble__meta">
+            <span>{{ msg.authorLabel }}</span>
+            <time>{{ msg.sentAt | date:'dd MMM HH:mm' }}</time>
+          </div>
+          <p>{{ msg.content }}</p>
+          <div class="bubble__flag" *ngIf="msg.isFlagged">
+            <mat-icon>report</mat-icon>
+            <span>{{ msg.flagLabel || 'Flagged content' }}</span>
+          </div>
+          <a *ngIf="msg.resumeUrl" [href]="msg.resumeUrl" target="_blank" rel="noopener">
+            <mat-icon>open_in_new</mat-icon>
+            Pièce jointe
+          </a>
+        </div>
+      </div>
+
+      <form class="composer" [formGroup]="messageForm" (ngSubmit)="sendMessage()">
+        <mat-form-field appearance="outline" class="composer__field">
+          <mat-label>Message au client</mat-label>
+          <textarea
+            matInput
+            rows="3"
+            formControlName="content"
+            placeholder="Précisez le scope, proposez un créneau, partagez une idée..."
+          ></textarea>
+          <mat-error *ngIf="messageForm.controls.content.hasError('required')">
+            Message requis.
+          </mat-error>
+          <mat-error *ngIf="messageForm.controls.content.hasError('minlength')">
+            3 caractères minimum.
+          </mat-error>
+        </mat-form-field>
+
+        <!-- <mat-form-field appearance="outline" class="composer__field">
+          <mat-label>Lien (CV, portfolio...)</mat-label>
+          <input matInput formControlName="resumeUrl" placeholder="https://...">
+          <mat-error *ngIf="messageForm.controls.resumeUrl.invalid">
+            Fournissez une URL valide.
+          </mat-error>
+        </mat-form-field> -->
+
+        <div class="composer__actions">
+          <span class="spacer"></span>
+          <button mat-flat-button color="primary" type="submit" [disabled]="messageForm.invalid || loading()">
+            <mat-icon>send</mat-icon>
+            Envoyer
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel conversation empty" *ngIf="!selected() && !loading() && !error()">
+      <mat-icon>chat_bubble_outline</mat-icon>
+      <p>Sélectionnez une candidature pour voir les échanges.</p>
+    </section>
+  </div>
+</section>
+
+
+
+

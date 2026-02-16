@@ -1,0 +1,90 @@
+<ng-container *ngIf="showSection">
+  <mat-card class="mission-feedback">
+    <mat-card-header>
+      <mat-icon mat-card-avatar color="primary">rate_review</mat-icon>
+      <div>
+        <mat-card-title>Feedback post-mission</mat-card-title>
+        <mat-card-subtitle>
+          {{ mode === 'client' ? 'Votre avis sur le freelance' : 'Votre avis sur le client' }}
+        </mat-card-subtitle>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="state" *ngIf="loading()">
+        <mat-progress-spinner diameter="26" mode="indeterminate"></mat-progress-spinner>
+        <span>Chargement du feedback...</span>
+      </div>
+
+      <div class="state state--error" *ngIf="!loading() && error()">
+        <mat-icon color="warn">error_outline</mat-icon>
+        <span>{{ error() }}</span>
+      </div>
+
+      <ng-container *ngIf="!loading()">
+        <section *ngIf="feedback(); else feedbackForm" class="feedback__readonly">
+          <div class="rating">
+            <ng-container *ngFor="let star of stars">
+              <mat-icon [class.filled]="(feedback()?.rating || 0) >= star">star</mat-icon>
+            </ng-container>
+            <span class="rating__value">{{ feedback()?.rating }}/5</span>
+          </div>
+          <p class="feedback__comment" *ngIf="feedback()?.comment; else noComment">
+            {{ feedback()?.comment }}
+          </p>
+          <ng-template #noComment>
+            <span class="muted">Pas de commentaire ajoute.</span>
+          </ng-template>
+        </section>
+
+        <ng-template #feedbackForm>
+          <form class="feedback__form" [formGroup]="form" (ngSubmit)="submit()">
+            <label class="label">Note globale</label>
+            <div class="rating rating--picker">
+              <button
+                type="button"
+                mat-icon-button
+                *ngFor="let star of stars"
+                [disabled]="saving()"
+                [class.active]="form.controls.rating.value >= star"
+                (click)="setRating(star)"
+                aria-label="Note {{ star }}"
+              >
+                <mat-icon>{{ form.controls.rating.value >= star ? 'star' : 'star_border' }}</mat-icon>
+              </button>
+              <span class="rating__value muted">{{ form.controls.rating.value }}/5</span>
+            </div>
+            <div class="error" *ngIf="form.controls.rating.invalid && form.controls.rating.touched">
+              Choisissez une note entre 1 et 5.
+            </div>
+
+            <mat-form-field appearance="outline" class="feedback__field">
+              <mat-label>Commentaire (min 10 caracteres)</mat-label>
+              <textarea
+                matInput
+                rows="3"
+                formControlName="comment"
+                [maxlength]="maxCommentLength"
+                placeholder="Partage votre retour ou des points a ameliorer"
+              ></textarea>
+              <mat-hint align="end">
+                {{ form.controls.comment.value.length || 0 }}/{{ maxCommentLength }}
+              </mat-hint>
+              <mat-error *ngIf="form.controls.comment.invalid && form.controls.comment.touched">
+                Commentaire requis (10 caracteres minimum).
+              </mat-error>
+            </mat-form-field>
+
+            <div class="actions">
+              <span class="muted">Un seul feedback par personne et par mission.</span>
+              <span class="spacer"></span>
+              <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving()">
+                {{ saving() ? 'Envoi...' : 'Envoyer le feedback' }}
+              </button>
+            </div>
+          </form>
+        </ng-template>
+      </ng-container>
+    </mat-card-content>
+  </mat-card>
+</ng-container>

@@ -1,0 +1,65 @@
+<section class="milestones">
+  <header class="milestones__head">
+    <div>
+      <p class="eyebrow">Jalons</p>
+      <h2>Livraison des jalons</h2>
+      <p class="muted">Envoyez vos livrables et suivez leur validation.</p>
+    </div>
+    <button mat-stroked-button color="primary" type="button" (click)="load(resolvedMissionId()!)">
+      <mat-icon>refresh</mat-icon>
+      Actualiser
+    </button>
+  </header>
+
+  <mat-progress-bar *ngIf="loading()" mode="indeterminate"></mat-progress-bar>
+
+  <div class="state state--error" *ngIf="!loading() && error()">
+    <mat-icon>error_outline</mat-icon>
+    <div>
+      <p>{{ error() }}</p>
+      <small>Reessayez plus tard.</small>
+    </div>
+  </div>
+
+  <mat-card appearance="outlined" class="list">
+    <div class="table">
+      <div class="table__row table__row--head">
+        <div>Titre</div>
+        <div>Description</div>
+        <div>Montant</div>
+        <div>Echeance</div>
+        <div>Statut</div>
+        <div>Actions</div>
+      </div>
+
+      <div class="table__row" *ngFor="let m of milestones()">
+        <div class="title">{{ m.title }}</div>
+        <div class="desc">{{ m.description || '-' }}</div>
+        <div class="amount">{{ m.amount | currency:'EUR' }}</div>
+        <div>{{ m.dueDate | date:'dd MMM yyyy' }}</div>
+        <div>
+          <mat-chip [color]="statusColor(m.status)" selected>{{ statusLabel(m.status) }}</mat-chip>
+        </div>
+        <div class="actions">
+          <button
+            mat-stroked-button
+            color="primary"
+            type="button"
+            *ngIf="canDeliver(m.status)"
+            (click)="deliver(m.id!)"
+            [disabled]="actionLoading()"
+          >
+            Livrer ce jalon
+          </button>
+        </div>
+      </div>
+
+      <div class="table__row table__row--empty" *ngIf="!milestones().length && !loading()">
+        <div class="empty">
+          <mat-icon>playlist_add</mat-icon>
+          <p>Aucun jalon pour le moment.</p>
+        </div>
+      </div>
+    </div>
+  </mat-card>
+</section>

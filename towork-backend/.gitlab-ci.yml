@@ -1,0 +1,35 @@
+stages:
+  - build
+  - test
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  MAVEN_CLI_OPTS: "-B -Dmaven.test.skip=true"
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .m2/repository
+
+build:
+  stage: build
+  image: maven:3-eclipse-temurin-21
+  script:
+    - mvn $MAVEN_CLI_OPTS clean package
+  artifacts:
+    paths:
+      - target/*.jar
+    expire_in: 1 week
+
+test:
+  stage: test
+  image: maven:3-eclipse-temurin-21
+  needs: [build]
+  script:
+    - mvn -B verify
+  artifacts:
+    when: always
+    paths:
+      - target/surefire-reports/
+      - target/jacoco/*.xml
+    expire_in: 1 week

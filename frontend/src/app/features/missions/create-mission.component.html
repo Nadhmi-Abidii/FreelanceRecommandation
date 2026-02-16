@@ -1,0 +1,273 @@
+<div class="page">
+  <header class="top-bar">
+    <div class="logo" routerLink="/">To<span>Work</span></div>
+    <nav class="main-nav">
+      <a routerLink="/dashboard" routerLinkActive="active">Tableau de bord</a>
+      <a routerLink="/missions/create" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Créer une mission</a>
+      <a routerLink="/missions" class="disabled" aria-disabled="true">Mes missions</a>
+      <a routerLink="/applications" class="disabled" aria-disabled="true">Candidatures</a>
+      <a routerLink="/messages" class="disabled" aria-disabled="true">Discussions</a>
+      <a mat-button routerLink="/client/wallet" routerLinkActive="active">Wallet</a>
+    </nav>
+    <div class="cta">
+    </div>
+  </header>
+
+  <main class="content">
+    <section class="wizard">
+      <header class="wizard-header">
+        <h1>Créer une mission</h1>
+        <p>Complétez les étapes ci-dessous pour publier votre mission auprès des meilleurs talents.</p>
+      </header>
+
+      <div class="progress">
+        <ol>
+          <li *ngFor="let step of steps; index as i" [class.active]="isActive(i)" [class.completed]="isCompleted(i)">
+            <button type="button" (click)="goToStep(i)" [attr.aria-current]="isActive(i) ? 'step' : null">
+              <span class="step-index">{{ i + 1 }}</span>
+              <span class="step-label">
+                <strong>{{ step.label }}</strong>
+                <small>{{ step.description }}</small>
+              </span>
+            </button>
+          </li>
+        </ol>
+        <div class="progress-track">
+          <div class="progress-bar" [style.width.%]="progress()"></div>
+        </div>
+      </div>
+
+      <!-- (ngSubmit) left as-is; the main button click decides when to call finish() -->
+      <form class="wizard-form" [formGroup]="form" (ngSubmit)="finish()">
+        <div class="step-body" [ngSwitch]="currentStep()">
+          <!-- Étape 1 -->
+          <section *ngSwitchCase="0" formGroupName="general" class="card">
+            <h2>Informations Générales</h2>
+            <div class="field">
+              <label for="mission-title">Titre de la Mission<span aria-hidden="true">*</span></label>
+              <input id="mission-title" type="text" formControlName="title" placeholder="Exemple : Développer une application mobile Flutter pour e-commerce" />
+              <p class="error" *ngIf="showErrors(form.controls.general.controls.title)">
+                Le titre est requis (100 caractères max).
+              </p>
+            </div>
+            <div class="field">
+              <label for="mission-description">Description de la Mission<span aria-hidden="true">*</span></label>
+              <textarea id="mission-description" rows="6" formControlName="description" placeholder="Soyez aussi précis que possible."></textarea>
+              <p class="helper">{{ form.controls.general.controls.description.value.length || 0 }}/800</p>
+              <p class="error" *ngIf="showErrors(form.controls.general.controls.description)">
+                Merci de renseigner une description détaillée (800 caractères max).
+              </p>
+            </div>
+            <div class="field ai-actions">
+              <div class="ai-actions__row">
+                <button type="button" class="btn ghost small" (click)="generateDraft()" [disabled]="aiDrafting()">
+                  {{ aiDrafting() ? 'AI draft...' : 'AI draft mission' }}
+                </button>
+                <button type="button" class="btn ghost small" (click)="rewriteDescription()" [disabled]="aiRewriting()">
+                  {{ aiRewriting() ? 'AI rewrite...' : 'Rewrite description' }}
+                </button>
+              </div>
+              <p class="helper">Use AI to draft or rewrite before you continue.</p>
+            </div>
+            <div class="field">
+              <label for="mission-domaine">Domaine<span aria-hidden="true">*</span></label>
+              <select id="mission-domaine" formControlName="domaineId">
+                <option value="" disabled>Select a domaine</option>
+                <option *ngFor="let d of domaines()" [value]="d.id">{{ d.name }}</option>
+              </select>
+              <div class="ai-actions__row">
+                <button type="button" class="btn ghost small" (click)="requestSuggestions()" [disabled]="suggesting()">
+                  {{ suggesting() ? 'AI suggestions...' : 'Suggest domaines' }}
+                </button>
+                <span class="helper" *ngIf="domainesLoading()">Loading domaines...</span>
+              </div>
+              <p class="error" *ngIf="showErrors(form.controls.general.controls.domaineId)">
+                Domaine required.
+              </p>
+              <p class="helper error" *ngIf="domainesError()">{{ domainesError() }}</p>
+              <div class="suggestions" *ngIf="domainSuggestions().length">
+                <span class="suggestions__label">AI suggestions:</span>
+                <button
+                  type="button"
+                  class="suggestion"
+                  *ngFor="let s of domainSuggestions()"
+                  (click)="applySuggestion(s.id)">
+                  {{ s.name }}
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Étape 2 -->
+          <section *ngSwitchCase="1" formGroupName="details" class="card">
+            <h2>Détails de la Mission</h2>
+            <div class="field">
+              <label for="mission-skills">Compétences Requises<span aria-hidden="true">*</span></label>
+              <div class="search-box">
+                <span class="icon" aria-hidden="true">🔍</span>
+                <input id="mission-skills" type="text" formControlName="skillsSearch" placeholder="Rechercher des compétences" />
+              </div>
+              <div class="popular-skills" aria-label="Compétences populaires">
+                <button
+                  type="button"
+                  *ngFor="let skill of popularSkills"
+                  (click)="toggleSkill(skill)"
+                  [class.selected]="skillSelected(skill)">
+                  {{ skill }}
+                </button>
+              </div>
+              <p class="selected" *ngIf="form.controls.details.controls.skills.value?.length">
+                Compétences sélectionnées :
+                <span class="chip" *ngFor="let skill of form.controls.details.controls.skills.value">{{ skill }}</span>
+              </p>
+            </div>
+            <div class="field group">
+              <div>
+                <label for="mission-budget">Budget de la Mission<span aria-hidden="true">*</span></label>
+                <input id="mission-budget" type="number" min="0" formControlName="budget" placeholder="Indiquez votre budget" />
+                <p class="error" *ngIf="showErrors(form.controls.details.controls.budget)">
+                  Merci de préciser un budget.
+                </p>
+              </div>
+              <div>
+                <label for="mission-budget-type">Type de Budget<span aria-hidden="true">*</span></label>
+                <select id="mission-budget-type" formControlName="budgetType">
+                  <option value="" disabled>Choisir un type</option>
+                  <option *ngFor="let type of budgetTypes" [value]="type.value">{{ type.label }}</option>
+                </select>
+                <p class="error" *ngIf="showErrors(form.controls.details.controls.budgetType)">
+                  Sélectionnez un type de budget.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <!-- Étape 3 -->
+          <section *ngSwitchCase="2" formGroupName="work" class="card">
+            <h2>Conditions de travail</h2>
+            <div class="field">
+              <label for="mission-duration">Durée en jours<span aria-hidden="true">*</span></label>
+              <input id="mission-duration" type="number" min="1" formControlName="duration" placeholder="Durée estimée de la mission" />
+              <p class="error" *ngIf="showErrors(form.controls.work.controls.duration)">
+                Indiquez la durée de la mission.
+              </p>
+            </div>
+            <div class="field">
+              <label for="mission-experience">Niveau d'Expérience<span aria-hidden="true">*</span></label>
+              <select id="mission-experience" formControlName="experience">
+                <option value="" disabled>Choisir un niveau</option>
+                <option *ngFor="let level of experienceLevels" [value]="level.value">{{ level.label }}</option>
+              </select>
+              <p class="error" *ngIf="showErrors(form.controls.work.controls.experience)">
+                Sélectionnez un niveau d'expérience.
+              </p>
+            </div>
+            <div class="field">
+              <label for="mission-work-mode">Type de Travail<span aria-hidden="true">*</span></label>
+              <select id="mission-work-mode" formControlName="workMode">
+                <option value="" disabled>Choisir un mode</option>
+                <option *ngFor="let mode of workModes" [value]="mode.value">{{ mode.label }}</option>
+              </select>
+              <p class="error" *ngIf="showErrors(form.controls.work.controls.workMode)">
+                Choisissez un mode de travail.
+              </p>
+            </div>
+          </section>
+
+          <!-- Étape 4 -->
+          <section *ngSwitchCase="3" class="card review" formGroupName="review">
+            <h2>Finalisation</h2>
+            <p class="summary-intro">Vérifiez les informations saisies avant de publier la mission.</p>
+            <dl class="summary">
+              <div>
+                <dt>Titre</dt>
+                <dd>{{ form.controls.general.controls.title.value || '—' }}</dd>
+              </div>
+              <div>
+                <dt>Description</dt>
+                <dd>{{ form.controls.general.controls.description.value || '—' }}</dd>
+              </div>
+              <div>
+                <dt>Compétences</dt>
+                <dd>
+                  <span class="chip" *ngFor="let skill of form.controls.details.controls.skills.value">{{ skill }}</span>
+                  <span *ngIf="!form.controls.details.controls.skills.value?.length">Aucune compétence sélectionnée</span>
+                </dd>
+              </div>
+              <div>
+                <dt>Budget</dt>
+                <dd>
+                  {{ form.controls.details.controls.budget.value || '—' }}
+                  <span *ngIf="form.controls.details.controls.budgetType.value">
+                    · {{ budgetTypeLabel(form.controls.details.controls.budgetType.value) }}
+                  </span>
+                </dd>
+              </div>
+              <div>
+                <dt>Durée</dt>
+                <dd>{{ form.controls.work.controls.duration.value || '—' }} jours</dd>
+              </div>
+              <div>
+                <dt>Expérience</dt>
+                <dd>{{ experienceLabel(form.controls.work.controls.experience.value) }}</dd>
+              </div>
+              <div>
+                <dt>Type de travail</dt>
+                <dd>{{ workModeLabel(form.controls.work.controls.workMode.value) }}</dd>
+              </div>
+            </dl>
+            <div class="field">
+              <label for="mission-notes">Notes pour le freelance</label>
+              <textarea id="mission-notes" rows="4" formControlName="notes" placeholder="Informations complémentaires (optionnel)"></textarea>
+            </div>
+            <div class="confirmation" *ngIf="submitted()">
+              <strong>Mission prête !</strong>
+              <p>Vos informations sont enregistrées. Vous pourrez la publier une fois connecté.</p>
+            </div>
+          </section>
+        </div>
+
+        <footer class="actions">
+          <button type="button" class="btn ghost" (click)="previousStep()" [disabled]="currentStep() === 0">Précédent</button>
+
+          <!-- ⬇️ Only creates on last step -->
+          <button
+            type="button"
+            class="btn solid"
+            [disabled]="(!canAdvance() && currentStep() !== steps.length - 1) || isSending()"
+            (click)="currentStep() === steps.length - 1 ? finish() : nextStep()">
+            {{ currentStep() === steps.length - 1 ? (isSending() ? 'Envoi...' : 'Créer la mission') : 'Suivant' }}
+          </button>
+        </footer>
+      </form>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="brand">
+      <div class="logo">To<span>Work</span></div>
+      <p>Plateforme de mise en relation entre freelancers et clients pour des projets professionnels.</p>
+      <div class="socials" aria-label="Réseaux sociaux">
+        <a href="#" aria-label="Facebook">Fb</a>
+        <a href="#" aria-label="Twitter">Tw</a>
+        <a href="#" aria-label="LinkedIn">In</a>
+        <a href="#" aria-label="Instagram">Ig</a>
+      </div>
+    </div>
+    <div class="links">
+      <strong>WebSite Info</strong>
+      <a routerLink="/">Home</a>
+      <a routerLink="/domains" class="disabled" aria-disabled="true">Domains</a>
+      <a routerLink="/freelancers" class="disabled" aria-disabled="true">Freelancers</a>
+      <a routerLink="/clients" class="disabled" aria-disabled="true">Clients</a>
+    </div>
+    <div class="links">
+      <strong>Account</strong>
+      <a routerLink="/login">SignIn</a>
+      <a routerLink="/register">SignUp</a>
+    </div>
+  </footer>
+</div>
+
+
+

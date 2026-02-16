@@ -1,0 +1,101 @@
+<section class="page">
+  <header class="page__head">
+    <div>
+      <a class="back" routerLink="/messages">
+        <mat-icon>arrow_back</mat-icon>
+        Conversations
+      </a>
+      <p class="eyebrow">{{ header()?.missionTitle || 'Mission' }}</p>
+      <h1>{{ header()?.counterpartName || 'Conversation' }}</h1>
+    </div>
+    <div class="meta">
+      <mat-icon>schedule</mat-icon>
+      <span>Actualisation auto.</span>
+    </div>
+  </header>
+
+  <!-- <mat-card appearance="outlined" class="summary-card">
+    <div class="summary-card__head">
+      <div>
+        <p class="eyebrow">AI</p>
+        <h2>Resume de la conversation</h2>
+      </div>
+      <button mat-stroked-button color="primary" type="button" (click)="loadSummary()" [disabled]="summaryLoading()">
+        <mat-icon>auto_awesome</mat-icon>
+        {{ summaryLoading() ? 'Analyse...' : 'Generer' }}
+      </button>
+    </div>
+
+    <mat-progress-bar *ngIf="summaryLoading()" mode="indeterminate"></mat-progress-bar>
+
+    <div class="summary-card__error" *ngIf="summaryError()">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ summaryError() }}</span>
+    </div>
+
+    <div class="summary-card__body" *ngIf="summary()?.summary">
+      <p>{{ summary()?.summary }}</p>
+      <ul *ngIf="summary()?.nextSteps?.length">
+        <li *ngFor="let step of summary()?.nextSteps">{{ step }}</li>
+      </ul>
+    </div>
+  </mat-card> -->
+
+  <mat-progress-bar *ngIf="loading()" mode="indeterminate"></mat-progress-bar>
+
+  <div class="state state--error" *ngIf="!loading() && error()">
+    <mat-icon>error_outline</mat-icon>
+    <div>
+      <p>{{ error() }}</p>
+      <small>Merci de reessayer ou de revenir a la liste.</small>
+    </div>
+    <button mat-button color="primary" type="button" routerLink="/messages">
+      Retour
+    </button>
+  </div>
+
+  <mat-card appearance="outlined" class="chat" *ngIf="!error()">
+    <div class="chat__body" #chatBody>
+      <div class="empty" *ngIf="!messages().length && !loading()">
+        <mat-icon>forum</mat-icon>
+        <p>Aucun message pour le moment.</p>
+      </div>
+
+      <div
+        *ngFor="let msg of messages()"
+        class="message"
+        [class.message--me]="msg.isMine"
+      >
+        <div class="message__bubble">
+          <p>{{ msg.content }}</p>
+          <div class="message__flag" *ngIf="msg.isFlagged">
+            <mat-icon>report</mat-icon>
+            <span>{{ msg.flagLabel || 'Flagged content' }}</span>
+          </div>
+          <div class="message__meta">
+            <span>{{ msg.isMine ? 'Vous' : (msg.authorName || header()?.counterpartName || 'Interlocuteur') }}</span>
+            <time *ngIf="msg.createdAt">{{ msg.createdAt | date:'dd MMM HH:mm' }}</time>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <form class="composer" [formGroup]="form" (ngSubmit)="send()">
+      <mat-form-field appearance="outline" class="composer__field">
+        <mat-label>Votre message</mat-label>
+        <textarea
+          matInput
+          rows="3"
+          formControlName="message"
+          placeholder="Redigez votre reponse"
+        ></textarea>
+        <mat-error *ngIf="form.controls.message.hasError('required')">Message requis</mat-error>
+        <mat-error *ngIf="form.controls.message.hasError('minlength')">2 caracteres minimum</mat-error>
+      </mat-form-field>
+      <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || sending()">
+        <mat-icon>send</mat-icon>
+        Envoyer
+      </button>
+    </form>
+  </mat-card>
+</section>

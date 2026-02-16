@@ -1,0 +1,207 @@
+<section class="detail" *ngIf="mission(); else notFound">
+  <header class="detail__header">
+    <button mat-button type="button" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+      Retour au tableau de bord
+    </button>
+    <div class="detail__actions">
+      <button mat-stroked-button color="primary" type="button" (click)="markAsApplied()">
+        <mat-icon>how_to_reg</mat-icon>
+        J'ai candidata
+      </button>
+      <button mat-icon-button type="button" (click)="toggleSaved()">
+        <mat-icon color="warn">{{ mission()?.isSaved ? 'bookmark' : 'bookmark_border' }}</mat-icon>
+      </button>
+    </div>
+  </header>
+
+  <mat-card appearance="outlined" class="detail__mission">
+    <mat-card-header>
+      <div mat-card-avatar class="detail__avatar">{{ mission()?.clientName?.[0] || 'C' }}</div>
+      <mat-card-title>{{ mission()?.title }}</mat-card-title>
+      <mat-card-subtitle>{{ mission()?.clientName }} Â· {{ mission()?.domaine }}</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="detail__status" [ngClass]="getStatusTone(mission()!.status)">
+        <mat-icon>flag</mat-icon>
+        <span>{{ statusLabel() }}</span>
+      </div>
+      <div class="detail__urgency" [class.detail__urgency--urgent]="mission()?.urgency === 'URGENT'">
+        <mat-icon>bolt</mat-icon>
+        <span>{{ urgencyLabel() }} Â· {{ getDeadlineLabel(mission()!.deadline) }}</span>
+      </div>
+
+      <section class="detail__grid">
+        <div class="detail__info">
+          <h2>Aperçu de la mission</h2>
+          <p>{{ mission()?.summary }}</p>
+
+          <div class="detail__meta">
+            <div>
+              <mat-icon>payments</mat-icon>
+              <span>{{ mission()?.budget }}</span>
+            </div>
+            <div>
+              <mat-icon>schedule</mat-icon>
+              <span>{{ mission()?.duration }} · {{ mission()?.weeklyRhythm }}</span>
+            </div>
+            <div>
+              <mat-icon>location_on</mat-icon>
+              <span>{{ mission()?.location }}</span>
+            </div>
+            <div>
+              <mat-icon>emoji_events</mat-icon>
+              <span>{{ mission()?.experienceLevel }}</span>
+            </div>
+          </div>
+
+          <h3>Description</h3>
+          <p class="detail__description">{{ mission()?.description }}</p>
+
+          <h3>Livrables clés</h3>
+          <ul>
+            <li *ngFor="let deliverable of mission()?.deliverables">{{ deliverable }}</li>
+          </ul>
+
+          <h3>Compétences attendues</h3>
+          <mat-chip-set>
+            <mat-chip *ngFor="let requirement of mission()?.requirements">{{ requirement }}</mat-chip>
+          </mat-chip-set>
+
+          <h3>Outils à maîtriser</h3>
+          <mat-chip-set>
+            <mat-chip *ngFor="let tool of mission()?.tools">{{ tool }}</mat-chip>
+          </mat-chip-set>
+        </div>
+
+        <aside class="detail__sidebar">
+          <mat-card appearance="outlined" class="detail__highlight">
+            <mat-card-title>Informations clÃ©s</mat-card-title>
+            <mat-card-content>
+              <p><strong>Publication :</strong> {{ mission()?.postedAt | date:'dd MMMM yyyy' }}</p>
+              <p><strong>ClÃ´ture :</strong> {{ mission()?.deadline | date:'dd MMMM yyyy' }}</p>
+              <p><strong>Rythme :</strong> {{ mission()?.weeklyRhythm }}</p>
+              <p><strong>Mode :</strong> {{ mission()?.workModel }}</p>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card appearance="outlined" class="detail__cta">
+            <mat-card-title>Prochaine Ã©tape</mat-card-title>
+            <mat-card-content>
+              <p>Personnalisez votre message et partagez un livrable reprÃ©sentatif pour maximiser vos chances.</p>
+            </mat-card-content>
+            <mat-card-actions>
+              <button mat-raised-button color="primary" type="button" (click)="markAsApplied()">
+                <mat-icon>north_east</mat-icon>
+                Envoyer ma candidature
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        </aside>
+      </section>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card appearance="outlined" class="detail__milestones">
+    <mat-card-header>
+      <mat-card-title>Jalons</mat-card-title>
+      <mat-card-subtitle>Livrer et suivre les validations</mat-card-subtitle>
+      <button
+        mat-flat-button
+        color="primary"
+        style="margin-left:auto"
+        type="button"
+        *ngIf="canSubmitFinal()"
+        (click)="submitFinalDelivery()"
+        [disabled]="submittingFinal()">
+        <mat-icon>flag_circle</mat-icon>
+        Soumettre la livraison finale
+      </button>
+    </mat-card-header>
+    <mat-card-content>
+      <app-freelancer-mission-milestones [missionId]="mission()?.id"></app-freelancer-mission-milestones>
+    </mat-card-content>
+  </mat-card>
+
+  <app-mission-feedback
+    *ngIf="mission() && isCompleted()"
+    [missionId]="mission()!.id"
+    [missionStatus]="mission()?.backendStatus || mission()?.status || null"
+    [mode]="'freelancer'">
+  </app-mission-feedback>
+
+  <mat-card appearance="outlined" class="detail__conversation">
+    <mat-card-header>
+      <mat-card-title>Messages avec le client</mat-card-title>
+      <mat-card-subtitle>Gardez un ton professionnel et personnalisÃ©</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="conversation__stream" *ngIf="conversation().length; else emptyConversation">
+        <div *ngFor="let message of conversation()" class="conversation__message" [ngClass]="'conversation__message--' + message.author">
+          <div class="conversation__meta">
+            <strong>{{ message.author === 'freelancer' ? 'Vous' : mission()?.clientName }}</strong>
+            <span>{{ message.sentAt | date:'dd MMM yyyy Â· HH:mm' }}</span>
+          </div>
+          <p>{{ message.content }}</p>
+        </div>
+      </div>
+      <ng-template #emptyConversation>
+        <div class="conversation__empty">
+          <mat-icon>forum</mat-icon>
+          <p>Aucun message pour le moment. Brisez la glace avec une prÃ©sentation personnalisÃ©e !</p>
+        </div>
+      </ng-template>
+    </mat-card-content>
+
+    <mat-divider></mat-divider>
+
+    <form class="conversation__form" [formGroup]="messageForm" (ngSubmit)="submitMessage()">
+      <mat-form-field appearance="outline" class="conversation__field">
+        <mat-label>Votre message</mat-label>
+        <textarea matInput formControlName="message" rows="4" placeholder="Expliquez pourquoi vous Ãªtes la bonne personne pour cette mission"></textarea>
+        <mat-error *ngIf="messageForm.controls.message.hasError('required')">Le message est requis</mat-error>
+        <mat-error *ngIf="messageForm.controls.message.hasError('minlength')">6 caractÃ¨res minimum</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="conversation__field conversation__resume">
+        <mat-label>Budget proposé (€)</mat-label>
+        <input matInput type="number" formControlName="proposedPrice" min="1" placeholder="Ex : 500">
+        <mat-error *ngIf="messageForm.controls.proposedPrice.hasError('required')">Budget requis</mat-error>
+        <mat-error *ngIf="messageForm.controls.proposedPrice.hasError('min')">Budget minimum 1€</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="conversation__field conversation__resume">
+        <mat-label>Durée estimée (jours)</mat-label>
+        <input matInput type="number" formControlName="proposedDuration" min="1" placeholder="Optionnel">
+        <mat-error *ngIf="messageForm.controls.proposedDuration.hasError('min')">Doit être positif</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="conversation__field conversation__resume">
+        <mat-label>Lien vers votre CV / portfolio</mat-label>
+        <input matInput formControlName="resumeUrl" placeholder="https://monportfolio.com/cv.pdf">
+        <mat-hint>Optionnel mais recommandÃ© pour accÃ©lÃ©rer la dÃ©cision</mat-hint>
+        <mat-error *ngIf="messageForm.controls.resumeUrl.hasError('pattern')">
+          Ajoutez un lien complet commenÃ§ant par http(s)://
+        </mat-error>
+      </mat-form-field>
+      <button mat-flat-button color="primary" type="submit" [disabled]="messageForm.invalid">
+        <mat-icon>send</mat-icon>
+        Envoyer
+      </button>
+    </form>
+  </mat-card>
+</section>
+
+<ng-template #notFound>
+  <section class="detail detail--empty">
+    <mat-card appearance="outlined">
+      <mat-card-content>
+        <mat-icon>search_off</mat-icon>
+        <h2>Mission introuvable</h2>
+        <p>Cette mission n'est plus disponible ou l'identifiant est incorrect.</p>
+        <button mat-raised-button color="primary" type="button" routerLink="/freelancer/dashboard">
+          Retour aux missions
+        </button>
+      </mat-card-content>
+    </mat-card>
+  </section>
+</ng-template>

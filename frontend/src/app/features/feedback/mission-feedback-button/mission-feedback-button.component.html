@@ -1,0 +1,48 @@
+<ng-container *ngIf="mission && isCompleted()">
+  <mat-card class="mf-card">
+    <div class="mf-header">
+      <div>
+        <h3>Feedback</h3>
+        <p class="muted">
+          {{ context === 'client' ? 'Votre avis sur le freelance' : 'Votre avis sur le client' }}
+        </p>
+      </div>
+      <div *ngIf="loading()" class="mf-loading">
+        <mat-icon>hourglass_top</mat-icon>
+        <span>Chargement...</span>
+      </div>
+    </div>
+
+    <ng-container *ngIf="!loading()">
+      <div *ngIf="error()" class="mf-error">
+        <mat-icon color="warn">error_outline</mat-icon>
+        <span>{{ error() }}</span>
+      </div>
+
+      <section *ngIf="feedback(); else showButton" class="mf-readonly">
+        <div class="mf-stars">
+          <mat-icon *ngFor="let s of stars(5)" [class.filled]="(feedback()?.rating || 0) >= s">
+            {{ (feedback()?.rating || 0) >= s ? 'star' : 'star_border' }}
+          </mat-icon>
+          <span class="mf-score">{{ feedback()?.rating }}/5</span>
+        </div>
+        <p class="muted" *ngIf="feedback()?.createdAt">
+          Envoyé le {{ feedback()?.createdAt | date:'dd MMM yyyy' }}
+        </p>
+        <p class="mf-comment" *ngIf="feedback()?.comment; else noComment">
+          {{ feedback()?.comment }}
+        </p>
+        <ng-template #noComment>
+          <span class="muted">Pas de commentaire ajouté.</span>
+        </ng-template>
+      </section>
+
+      <ng-template #showButton>
+        <button mat-flat-button color="primary" type="button" (click)="openDialog()">
+          <mat-icon>rate_review</mat-icon>
+          {{ buttonLabel() }}
+        </button>
+      </ng-template>
+    </ng-container>
+  </mat-card>
+</ng-container>
