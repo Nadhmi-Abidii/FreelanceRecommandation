@@ -141,24 +141,6 @@ curl -X POST "http://localhost:9020/domaines" \
   }'
 ```
 
-PowerShell:
-```powershell
-$token = "<YOUR_TOKEN>"
-$body = @{
-  name        = "Web Development"
-  description = "Frontend and backend development"
-  icon        = "code"
-  color       = "#2563EB"
-} | ConvertTo-Json
-
-Invoke-WebRequest -UseBasicParsing `
-  -Uri "http://localhost:9020/domaines" `
-  -Method POST `
-  -ContentType "application/json" `
-  -Headers @{ Authorization = "Bearer $token" } `
-  -Body $body
-```
-
 ### Common API Errors
 - `400` on register admin: email already used or invalid/missing fields.
 - `401/403` on create domaine: missing or invalid token.
