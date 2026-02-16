@@ -1,0 +1,58 @@
+<mat-toolbar class="topbar" role="navigation" aria-label="Navigation principale">
+  <div class="brand" routerLink="/dashboard" aria-label="ToWork dashboard">
+    <div class="logo">
+      <span class="dot dot--blue"></span>
+      <span class="dot dot--violet"></span>
+    </div>
+    <div class="brand__text">
+      <span class="brand__name">ToWork</span>
+      <span class="brand__tag">Plateforme</span>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <a mat-button routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
+
+    <ng-container *ngIf="isClient(); else freelancerNav">
+      <a mat-button routerLink="/client/missions" routerLinkActive="active">Missions</a>
+      <a mat-button routerLink="/client/wallet" routerLinkActive="active">Wallet</a>
+      <a mat-button routerLink="/candidatures" routerLinkActive="active">Candidatures</a>
+    </ng-container>
+
+    <ng-template #freelancerNav>
+      <ng-container *ngIf="isFreelancer(); else adminNav">
+        <a mat-button routerLink="/freelancer/missions" routerLinkActive="active">Missions</a>
+        <a mat-button routerLink="/freelancer/candidatures" routerLinkActive="active">Mes candidatures</a>
+        <a mat-button routerLink="/freelancer/portfolio" routerLinkActive="active">Portfolio</a>
+      </ng-container>
+    </ng-template>
+
+    <ng-template #adminNav>
+      <ng-container *ngIf="isAdmin()">
+        <a mat-button routerLink="/admin" routerLinkActive="active">Admin</a>
+      </ng-container>
+    </ng-template>
+
+    <a mat-button routerLink="/messages" routerLinkActive="active">Messages</a>
+  </nav>
+
+  <span class="spacer"></span>
+
+  <mat-slide-toggle class="topbar__toggle" (change)="toggleDark($event.checked)">
+    Sombre
+  </mat-slide-toggle>
+
+  <button mat-icon-button matBadge="3" matBadgeColor="accent" aria-label="Notifications">
+    <mat-icon>notifications</mat-icon>
+  </button>
+
+  <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Profil">
+    <mat-icon>account_circle</mat-icon>
+  </button>
+
+  <mat-menu #menu="matMenu">
+    <button mat-menu-item routerLink="/profile"><mat-icon>person</mat-icon><span>Profil</span></button>
+    <mat-divider></mat-divider>
+    <button mat-menu-item (click)="logout()"><mat-icon>logout</mat-icon><span>Deconnexion</span></button>
+  </mat-menu>
+</mat-toolbar>

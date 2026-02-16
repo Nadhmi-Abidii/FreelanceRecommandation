@@ -1,0 +1,87 @@
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  display: flex;
+  gap: 12px;
+  background: linear-gradient(90deg, #0ea5e9 0%, #2563eb 35%, #4338ca 100%);
+  color: #f8fbff;
+  box-shadow: 0 10px 30px rgba(17, 24, 39, 0.2);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.logo {
+  display: grid;
+  grid-template-columns: repeat(2, 10px);
+  grid-template-rows: repeat(2, 10px);
+  gap: 4px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: block;
+}
+
+.dot--blue {
+  background: #22d3ee;
+}
+
+.dot--violet {
+  background: #a855f7;
+}
+
+.brand__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.brand__name {
+  font-weight: 800;
+  letter-spacing: 0.4px;
+}
+
+.brand__tag {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+
+.nav a.active {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.topbar__toggle {
+  color: #fff;
+}
+
+@media (max-width: 960px) {
+  .nav a {
+    font-size: 12px;
+    padding: 0 6px;
+  }
+}
