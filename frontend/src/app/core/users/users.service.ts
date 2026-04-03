@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { forkJoin, map, Observable } from 'rxjs';
+import { environment } from '../../src/environments/environment';
 
 export type ManagedRole = 'ROLE_CLIENT' | 'ROLE_FREELANCER' | 'ROLE_ADMIN';
 export type ManagedStatus = 'Actif' | 'Inactif';
@@ -79,7 +80,7 @@ type AuthResponse = {
 @Injectable({ providedIn: 'root' })
 export class UsersService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:9020';
+  private baseUrl = environment.apiUrl;
 
   private getAuthHeaders(): HttpHeaders {
     const token =

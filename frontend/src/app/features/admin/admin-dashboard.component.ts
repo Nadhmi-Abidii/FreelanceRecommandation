@@ -16,6 +16,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { AuthService } from '../../core/auth/auth';
+import { environment } from '../../src/environments/environment';
 
 import { HttpClient, HttpClientModule, HttpHeaders, HttpParams } from '@angular/common/http';
 import { forkJoin, map } from 'rxjs';
@@ -88,7 +89,7 @@ export default class AdminDashboardComponent {
 
 
   /* Config */
-  private readonly baseUrl = 'http://localhost:9020';
+  private readonly baseUrl = environment.apiUrl;
 
   /* Header */
   private readonly adminFallbackName = 'Administrateur';

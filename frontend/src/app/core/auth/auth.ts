@@ -1,6 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs';
+import { environment } from '../../src/environments/environment';
 
 export interface AuthResponse {
   token: string;
@@ -21,7 +22,7 @@ interface MessageResponse<T> {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:9020'; // change si besoin
+  private baseUrl = environment.apiUrl;
 
   private readonly storage = globalThis as { localStorage?: Storage; sessionStorage?: Storage };
   private readonly tokenKey = 'token';

@@ -25,19 +25,19 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
-    
     private final PasswordEncoder passwordEncoder;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
             .csrf(csrf -> csrf.disable())
-            .cors(cors -> {}) // <--- ACTIVE la bean CorsConfigurationSource
+            .cors(cors -> {})
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // <--- pré-requêtes
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers(
                     "/auth/**",
+                    "/actuator/health", "/actuator/health/**", "/actuator/info",
                     "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html"
                 ).permitAll()
                 .requestMatchers(HttpMethod.GET,
@@ -58,7 +58,7 @@ public class SecurityConfig {
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService); // <-- composite loader
+        provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
@@ -67,9 +67,4 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-
-    //  @Bean
-    // public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-    //     return config.getAuthenticationManager();
-    // }
 }

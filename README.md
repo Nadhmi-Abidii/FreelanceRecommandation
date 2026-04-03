@@ -36,6 +36,10 @@ The stack below is production-like for local usage:
    ```bash
    docker compose up --build -d
    ```
+4. For AWS Academy deployment:
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.aws.yml up --build -d
+   ```
 
 ## Access URLs
 - Frontend: `http://localhost:4200`
@@ -47,6 +51,10 @@ The stack below is production-like for local usage:
 - Start services:
   ```bash
   docker compose up -d
+  ```
+- Start AWS Academy mode:
+  ```bash
+  docker compose -f docker-compose.yml -f docker-compose.aws.yml up -d
   ```
 - Rebuild and restart:
   ```bash
@@ -60,6 +68,16 @@ The stack below is production-like for local usage:
   ```bash
   docker compose down
   ```
+
+## AWS Academy
+- Detailed guide: `DEPLOY_AWS_ACADEMY.md`
+- AWS override file: `docker-compose.aws.yml`
+- Recommended AWS `.env` values:
+  - `SPRING_PROFILES_ACTIVE=prod`
+  - `FRONTEND_PORT=80`
+  - `BACKEND_PORT=9020`
+  - `POSTGRES_BIND_ADDRESS=127.0.0.1`
+  - `CORS_ALLOWED_ORIGINS=http://<EC2_PUBLIC_IP>`
 
 ## API Examples
 Base URL: `http://localhost:9020`
