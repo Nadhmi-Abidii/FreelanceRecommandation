@@ -52,10 +52,6 @@ The stack below is production-like for local usage:
   ```bash
   docker compose up -d
   ```
-- Start AWS Academy mode:
-  ```bash
-  docker compose -f docker-compose.yml -f docker-compose.aws.yml up -d
-  ```
 - Rebuild and restart:
   ```bash
   docker compose up --build -d
@@ -69,15 +65,6 @@ The stack below is production-like for local usage:
   docker compose down
   ```
 
-## AWS Academy
-- Detailed guide: `DEPLOY_AWS_ACADEMY.md`
-- AWS override file: `docker-compose.aws.yml`
-- Recommended AWS `.env` values:
-  - `SPRING_PROFILES_ACTIVE=prod`
-  - `FRONTEND_PORT=80`
-  - `BACKEND_PORT=9020`
-  - `POSTGRES_BIND_ADDRESS=127.0.0.1`
-  - `CORS_ALLOWED_ORIGINS=http://<EC2_PUBLIC_IP>`
 
 ## API Examples
 Base URL: `http://localhost:9020`
@@ -96,38 +83,6 @@ Request body:
   "phone": "123456789",
   "address": "Tunis"
 }
-```
-
-cURL:
-```bash
-curl -X POST "http://localhost:9020/auth/register/admin" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "firstName":"Super",
-    "lastName":"Admin",
-    "email":"admin@example.com",
-    "password":"Password123!",
-    "phone":"123456789",
-    "address":"Tunis"
-  }'
-```
-
-PowerShell:
-```powershell
-$body = @{
-  firstName = "Super"
-  lastName  = "Admin"
-  email     = "admin@example.com"
-  password  = "Password123!"
-  phone     = "123456789"
-  address   = "Tunis"
-} | ConvertTo-Json
-
-Invoke-WebRequest -UseBasicParsing `
-  -Uri "http://localhost:9020/auth/register/admin" `
-  -Method POST `
-  -ContentType "application/json" `
-  -Body $body
 ```
 
 Note: success response includes a JWT token in `data.token`.
